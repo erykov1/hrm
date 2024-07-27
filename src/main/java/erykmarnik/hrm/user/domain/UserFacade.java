@@ -53,15 +53,20 @@ public class UserFacade {
     return userRepository.save(user.modifyData(change)).dto();
   }
 
+  public UserDto getByUsername(String username) {
+    log.info("find user by username: " + username);
+    return userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException(username)).dto();
+  }
+
   private void validateUserEmail(String email) {
     EmailValidator.validateUserEmailData(email);
-    userRepository.findUserByEmail(email).ifPresent(user -> {
+    userRepository.findByEmail(email).ifPresent(user -> {
       throw new AlreadyTakenException(email);
     });
   }
 
   private void validateUsername(String username) {
-    userRepository.findUserByUsername(username).ifPresent(user -> {
+    userRepository.findByUsername(username).ifPresent(user -> {
       throw new AlreadyTakenException(username);
     });
   }

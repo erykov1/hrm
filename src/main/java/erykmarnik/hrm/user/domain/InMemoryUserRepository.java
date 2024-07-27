@@ -16,14 +16,14 @@ class InMemoryUserRepository implements UserRepository {
   private Map<Long, User> table = new HashMap<>();
 
   @Override
-  public Optional<User> findUserByEmail(String email) {
+  public Optional<User> findByEmail(String email) {
     return table.values().stream()
             .filter(user -> user.dto().getEmail().equals(email))
             .findFirst();
   }
 
   @Override
-  public Optional<User> findUserByUsername(String username) {
+  public Optional<User> findByUsername(String username) {
     return table.values().stream()
             .filter(user -> user.dto().getUsername().equals(username))
             .findFirst();
