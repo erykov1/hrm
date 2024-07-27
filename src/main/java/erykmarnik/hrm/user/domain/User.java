@@ -2,8 +2,7 @@ package erykmarnik.hrm.user.domain;
 
 import erykmarnik.hrm.user.dto.ModifyUserDto;
 import erykmarnik.hrm.user.dto.UserDto;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,12 +10,14 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "users")
+@Table(name = "user_info")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 class User {
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   Long userId;
   String username;
   String name;

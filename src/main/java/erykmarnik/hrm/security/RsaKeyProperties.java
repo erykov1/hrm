@@ -12,7 +12,7 @@ import java.security.interfaces.RSAPublicKey;
 @Getter
 @ConfigurationProperties(prefix = "rsa")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-class RsaKeyProperties {
+public class RsaKeyProperties {
   RSAPublicKey publicKey;
   RSAPrivateKey privateKey;
 }

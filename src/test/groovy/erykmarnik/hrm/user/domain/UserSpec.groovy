@@ -6,12 +6,13 @@ import erykmarnik.hrm.user.exception.AlreadyTakenException
 import erykmarnik.hrm.user.exception.InvalidEmailException
 import erykmarnik.hrm.user.exception.UserNotFoundException
 import erykmarnik.hrm.user.sample.UserSample
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import spock.lang.Specification
 import spock.lang.Unroll
 
 
 class UserSpec extends Specification implements UserSample {
-  UserCreator userCreator = new UserCreator()
+  UserCreator userCreator = new UserCreator(new BCryptPasswordEncoder())
   UserFacade userFacade = new UserConfiguration().userFacade(userCreator)
   private static final NOT_EXISTING_USER_ID = 11L
 
