@@ -4,6 +4,6 @@ CREATE TABLE user_info (
     name CHARACTER VARYING(30),
     surname CHARACTER VARYING(30),
     email CHARACTER VARYING(50),
-    password CHARACTER VARYING(30),
+    password CHARACTER VARYING(255),
     user_role CHARACTER VARYING(20)
 );
