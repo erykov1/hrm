@@ -15,7 +15,7 @@
 ## current architecture
 ![structurizr-90179-context diagram](https://github.com/user-attachments/assets/732621d6-301e-4d7f-9ee4-9403a427b7e4)
 
-![structurizr-90179-components](https://github.com/user-attachments/assets/51de8a13-2380-4867-853f-fbc4813cc2d0)
+![structurizr-90179-components (1)](https://github.com/user-attachments/assets/744da631-7206-4455-9571-c6527e65b8a9)
 
 ## release 0.0.2
   - admin creates admin/employee account
