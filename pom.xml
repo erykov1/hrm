@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>erykmarnik</groupId>
 	<artifactId>hrm</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2</version>
 	<name>hrm</name>
 	<description>hrm app</description>
 	<url/>
