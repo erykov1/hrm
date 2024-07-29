@@ -12,7 +12,7 @@ import org.springframework.security.core.Authentication;
 @Builder
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-class SecurityFacade {
+public class SecurityFacade {
   JwtTokenGenerator tokenGenerator;
   PasswordEncoder passwordEncoder;
   AuthenticationManager authenticationManager;

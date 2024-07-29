@@ -9,22 +9,24 @@ import com.nimbusds.jose.proc.SecurityContext;
 import erykmarnik.hrm.user.domain.UserDetailsServiceImplementation;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
+import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -64,7 +66,7 @@ class SecurityConfiguration {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/api/auth/token").permitAll()
+                    .requestMatchers("/api/auth/login").permitAll()
                     .requestMatchers("/api/user/register").permitAll()
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                     .anyRequest().authenticated()
@@ -74,6 +76,9 @@ class SecurityConfiguration {
                     .jwt(Customizer.withDefaults())
             )
             .userDetailsService(userDetailsServiceImplementation)
+            .exceptionHandling(
+                    (ex) -> ex.authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
+                            .accessDeniedHandler(new BearerTokenAccessDeniedHandler()))
             .build();
   }
 
@@ -84,7 +89,9 @@ class SecurityConfiguration {
 
   @Bean
   JwtEncoder jwtEncoder() {
-    JWK jwk = new RSAKey.Builder(rsaKeyProperties.getPublicKey()).privateKey(rsaKeyProperties.getPrivateKey()).build();
+    JWK jwk = new RSAKey.Builder(rsaKeyProperties.getPublicKey())
+            .privateKey(rsaKeyProperties.getPrivateKey())
+            .build();
     JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
     return new NimbusJwtEncoder(jwks);
   }

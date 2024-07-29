@@ -23,7 +23,7 @@ class AuthController {
   }
 
   @PostMapping("/login")
-  ResponseEntity<String> registerUser(@RequestBody LoginRequest loginRequest) {
+  ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
     return ResponseEntity.ok(securityFacade.createToken(loginRequest));
   }
 }
