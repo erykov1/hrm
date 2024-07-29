@@ -26,6 +26,7 @@ class UserController {
     this.userFacade = userFacade;
   }
 
+  @PreAuthorize("hasRole('ADMIN')")
   @PostMapping("/register/employee")
   ResponseEntity<UserDto> registerUser(@RequestBody CreateUserDto createUser) {
     return ResponseEntity.ok(userFacade.createEmployee(createUser));
@@ -38,7 +39,7 @@ class UserController {
   }
 
   @GetMapping("/all")
-  @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+  @PreAuthorize("hasRole('ADMIN')")
   ResponseEntity<List<UserDto>> getUsers() {
     return ResponseEntity.ok(userFacade.getAllUsers());
   }
