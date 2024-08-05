@@ -1,5 +1,6 @@
 package erykmarnik.hrm.security;
 
+import erykmarnik.hrm.user.domain.CustomUserDetailsService;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -19,11 +20,12 @@ class JwtTokenGenerator {
 
   public String generateToken(Authentication authentication) {
     Instant now = Instant.now();
+    CustomUserDetailsService userDetails = (CustomUserDetailsService) authentication.getPrincipal();
     String role = authentication.getAuthorities().stream()
             .map(GrantedAuthority::getAuthority)
             .collect(Collectors.joining(" "));
     JwtClaimsSet claimsSet = JwtClaimsSet.builder()
-            .issuer("self")
+            .issuer(userDetails.getUserId().toString())
             .issuedAt(now)
             .expiresAt(now.plus(1, ChronoUnit.HOURS))
             .subject(authentication.getName())

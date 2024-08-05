@@ -12,7 +12,7 @@ import java.util.Collections;
 
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-class CustomUserDetailsService implements UserDetails {
+public class CustomUserDetailsService implements UserDetails {
   Long userId;
   String username;
   String password;

@@ -24,6 +24,7 @@ class User {
   String surname;
   String email;
   String password;
+  @Enumerated(EnumType.STRING)
   UserRole userRole;
 
   UserDto dto() {
