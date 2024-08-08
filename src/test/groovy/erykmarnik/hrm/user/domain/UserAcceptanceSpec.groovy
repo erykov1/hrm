@@ -2,7 +2,7 @@ package erykmarnik.hrm.user.domain
 
 import erykmarnik.hrm.user.dto.UserDto
 import erykmarnik.hrm.user.dto.UserRoleDto
-import erykmarnik.hrm.user.integration.IntegrationSpec
+import erykmarnik.hrm.integration.IntegrationSpec
 import erykmarnik.hrm.user.sample.UserSample
 
 class UserAcceptanceSpec extends IntegrationSpec implements UserSample {

@@ -3,7 +3,7 @@ package erykmarnik.hrm.user.domain
 import erykmarnik.hrm.user.dto.CreateUserDto
 import erykmarnik.hrm.user.dto.ModifyUserDto
 import erykmarnik.hrm.user.dto.UserDto
-import erykmarnik.hrm.user.integration.HrmApi
+import erykmarnik.hrm.integration.HrmApi
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc

@@ -6,6 +6,9 @@ import erykmarnik.hrm.user.dto.UserDto
 import erykmarnik.hrm.user.dto.UserRoleDto
 
 trait UserSample {
+  static final Long ADMIN_JANE = 11L
+  static final Long EMPLOYEE_JOHN = 12L
+  static final Long EMPLOYEE_MIKE = 13L
   private Long userId = 1L
   private String username = "john123"
   private String name = "John"

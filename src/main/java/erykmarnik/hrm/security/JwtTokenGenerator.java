@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 class JwtTokenGenerator {
   JwtEncoder jwtEncoder;
 
-  public String generateToken(Authentication authentication) {
+  String generateToken(Authentication authentication) {
     Instant now = Instant.now();
     CustomUserDetailsService userDetails = (CustomUserDetailsService) authentication.getPrincipal();
     String role = authentication.getAuthorities().stream()

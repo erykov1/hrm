@@ -1,4 +1,4 @@
-package erykmarnik.hrm.user.integration
+package erykmarnik.hrm.integration
 
 import org.springframework.mock.web.MockHttpServletResponse
 

@@ -1,6 +1,7 @@
 package erykmarnik.hrm.security;
 
 import erykmarnik.hrm.user.domain.UserFacade;
+import erykmarnik.hrm.user.dto.UserRoleDto;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.experimental.FieldDefaults;
@@ -31,5 +32,9 @@ public class SecurityFacade {
       log.error("bad credentials");
       return "";
     }
+  }
+
+  public boolean isAdmin(Long userId) {
+    return userFacade.getByUserId(userId).getUserRole().equals(UserRoleDto.ADMIN);
   }
 }

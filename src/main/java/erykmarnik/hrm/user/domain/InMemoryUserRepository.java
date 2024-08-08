@@ -23,6 +23,13 @@ class InMemoryUserRepository implements UserRepository {
   }
 
   @Override
+  public Optional<User> findByUserId(Long userId) {
+    return table.values().stream()
+            .filter(user -> user.dto().getUserId().equals(userId))
+            .findFirst();
+  }
+
+  @Override
   public Optional<User> findByUsername(String username) {
     return table.values().stream()
             .filter(user -> user.dto().getUsername().equals(username))
@@ -111,8 +118,8 @@ class InMemoryUserRepository implements UserRepository {
 
   @Override
   public <S extends User> S save(S entity) {
-    Long userId = new Random().nextLong();
     if (entity.dto().getUserId() == null) {
+      Long userId = new Random().nextLong();
       entity.setUserId(userId);
     }
     table.put(entity.dto().getUserId(), entity);
