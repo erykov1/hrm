@@ -15,9 +15,7 @@ class TaskCreator {
   Task createTask(CreateTaskDto createTask) {
     return Task.builder()
             .createdAt(instantProvider.now())
-            .assignedTo(createTask.getAssignedTo())
             .createdBy(ContextHolder.getUserContext().getUserId())
-            .taskStatus(TaskStatus.NOT_STARTED)
             .taskName(createTask.getTaskName())
             .description(createTask.getDescription())
             .build();

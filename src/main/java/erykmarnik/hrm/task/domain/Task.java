@@ -23,11 +23,7 @@ class Task {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   Long taskId;
   Instant createdAt;
-  Long assignedTo;
   Long createdBy;
-  @Enumerated(EnumType.STRING)
-  TaskStatus taskStatus;
-  Instant doneAt;
   String taskName;
   String description;
 
@@ -35,10 +31,7 @@ class Task {
     return TaskDto.builder()
             .taskId(taskId)
             .createdAt(createdAt)
-            .assignedTo(assignedTo)
             .createdBy(createdBy)
-            .taskStatus(taskStatus.dto())
-            .doneAt(doneAt)
             .taskName(taskName)
             .description(description)
             .build();
@@ -48,25 +41,9 @@ class Task {
     return Task.builder()
             .taskId(taskId)
             .createdAt(createdAt)
-            .assignedTo(modifyTaskDto.getAssignedTo() == null ? assignedTo : modifyTaskDto.getAssignedTo())
             .createdBy(createdBy)
-            .taskStatus(modifyTaskDto.getTaskStatus() == null ? taskStatus : TaskStatus.valueOf(modifyTaskDto.getTaskStatus().name()))
-            .doneAt(doneAt)
             .taskName(modifyTaskDto.getTaskName() == null ? taskName : modifyTaskDto.getTaskName())
             .description(modifyTaskDto.getDescription() == null ? description : modifyTaskDto.getDescription())
-            .build();
-  }
-
-  Task setToDone(Instant doneAt) {
-    return Task.builder()
-            .taskId(taskId)
-            .createdAt(createdAt)
-            .assignedTo(assignedTo)
-            .createdBy(createdBy)
-            .taskStatus(TaskStatus.DONE)
-            .doneAt(doneAt)
-            .taskName(taskName)
-            .description(description)
             .build();
   }
 

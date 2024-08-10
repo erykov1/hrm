@@ -15,10 +15,7 @@ import java.time.Instant;
 public class TaskDto {
   Long taskId;
   Instant createdAt;
-  Long assignedTo;
   Long createdBy;
-  TaskStatusDto taskStatus;
-  Instant doneAt;
   String taskName;
   String description;
 }

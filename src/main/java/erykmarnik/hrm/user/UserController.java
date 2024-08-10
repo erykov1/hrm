@@ -44,7 +44,7 @@ class UserController {
   }
 
   @PutMapping("/modify/{userId}")
-  @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+  @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
   ResponseEntity<UserDto> modifyUser(@RequestBody ModifyUserDto modifyUserDto, @PathVariable Long userId) {
     return ResponseEntity.ok(userFacade.changeUserData(modifyUserDto, userId));
   }

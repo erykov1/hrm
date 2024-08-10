@@ -12,7 +12,6 @@ import java.time.Instant;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ModifyTaskDto {
   Long assignedTo;
-  TaskStatusDto taskStatus;
   String taskName;
   String description;
 }

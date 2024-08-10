@@ -13,6 +13,9 @@ import lombok.Builder;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Builder
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -34,13 +37,6 @@ public class TaskFacade {
     return taskRepository.save(task.modifyTask(modifyTask)).dto();
   }
 
-  public void setTaskToDone(Long taskId) {
-    log.info("setting task: " + taskId + " to done status");
-    validateUserPrivileges(taskId, ContextHolder.getUserContext().getUserId());
-    Task task = taskRepository.findTaskByTaskId(taskId).orElseThrow(() -> new TaskNotFoundException(taskId));
-    taskRepository.save(task.setToDone(instantProvider.now()));
-  }
-
   public TaskDto findByTaskId(Long taskId) {
     log.info("finding task: " + taskId);
     return taskRepository.findTaskByTaskId(taskId).orElseThrow(() -> new TaskNotFoundException(taskId)).dto();
@@ -51,6 +47,10 @@ public class TaskFacade {
     taskRepository.deleteById(taskId);
   }
 
+  public List<TaskDto> getAll() {
+    return taskRepository.findAll().stream().map(Task::dto).collect(Collectors.toList());
+  }
+
   private void validateUserPrivileges(Long taskId, Long userId) {
     if (!isAbleToModifyTask(taskId, userId)) {
       throw new ForbiddenTaskOperationException(taskId);
@@ -59,6 +59,6 @@ public class TaskFacade {
 
   private boolean isAbleToModifyTask(Long taskId, Long userId) {
     TaskDto task = findByTaskId(taskId);
-    return task.getCreatedBy().equals(userId) || task.getAssignedTo().equals(userId);
+    return task.getCreatedBy().equals(userId) || securityFacade.isAdmin(userId);
   }
 }
