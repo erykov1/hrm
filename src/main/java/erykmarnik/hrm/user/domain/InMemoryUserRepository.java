@@ -37,6 +37,11 @@ class InMemoryUserRepository implements UserRepository {
   }
 
   @Override
+  public boolean existsByUserId(Long userId) {
+    return table.containsKey(userId);
+  }
+
+  @Override
   public void flush() {
 
   }

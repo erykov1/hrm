@@ -11,4 +11,8 @@
         <sqlFile path="db/changelog/sql/change-002-EM.sql" splitStatements="true" endDelimiter=";" stripComments="true" />
         <comment>adding the task entity</comment>
     </changeSet>
+    <changeSet id="3" author="e.marnik">
+        <sqlFile path="db/changelog/sql/change-003-EM.sql" splitStatements="true" endDelimiter=";" stripComments="true" />
+        <comment>adding the assignment entity</comment>
+    </changeSet>
 </databaseChangeLog>

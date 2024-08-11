@@ -51,6 +51,10 @@ public class TaskFacade {
     return taskRepository.findAll().stream().map(Task::dto).collect(Collectors.toList());
   }
 
+  public boolean existsByTaskId(Long taskId) {
+    return taskRepository.existsByTaskId(taskId);
+  }
+
   private void validateUserPrivileges(Long taskId, Long userId) {
     if (!isAbleToModifyTask(taskId, userId)) {
       throw new ForbiddenTaskOperationException(taskId);

@@ -23,6 +23,11 @@ class InMemoryTaskRepository implements TaskRepository {
   }
 
   @Override
+  public boolean existsByTaskId(Long taskId) {
+    return table.containsKey(taskId);
+  }
+
+  @Override
   public void flush() {
 
   }

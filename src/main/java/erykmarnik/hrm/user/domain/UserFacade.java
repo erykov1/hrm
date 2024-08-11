@@ -63,6 +63,10 @@ public class UserFacade {
     return userRepository.findByUserId(userId).orElseThrow(() -> new UserNotFoundException(userId)).dto();
   }
 
+  public boolean existsByUserId(Long userId) {
+    return userRepository.existsByUserId(userId);
+  }
+
   private void validateUserEmail(String email) {
     EmailValidator.validateUserEmailData(email);
     userRepository.findByEmail(email).ifPresent(user -> {
