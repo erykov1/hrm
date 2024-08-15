@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Builder
@@ -65,9 +66,11 @@ public class AssignmentFacade {
   }
 
   private void validateDeleteAssignment(Long userId, Long assignmentId) {
-    Assignment assignment = getAssignment(assignmentId);
-    if (!securityFacade.isAdmin(userId) && !assignment.dto().getAssignmentCreatedBy().equals(userId)) {
-      throw new ForbiddenAssignmentOperationException(assignmentId);
+    Optional<Assignment> assignment = assignmentRepository.findByAssignmentId(assignmentId);
+    if (assignment.isPresent()) {
+      if (!securityFacade.isAdmin(userId) && !assignment.get().dto().getAssignmentCreatedBy().equals(userId)) {
+        throw new ForbiddenAssignmentOperationException(assignmentId);
+      }
     }
   }
 

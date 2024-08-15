@@ -1,6 +1,8 @@
 package erykmarnik.hrm.integration
 
 import erykmarnik.hrm.config.PostgresContainerConfig
+import erykmarnik.hrm.user.dto.UserContext
+import erykmarnik.hrm.utils.ContextHolder
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -36,5 +38,14 @@ class IntegrationSpec extends Specification {
     mockMvc = MockMvcBuilders.webAppContextSetup(context)
             .apply(SecurityMockMvcConfigurers.springSecurity())
             .build()
+  }
+
+  def loginUser(long userId) {
+    ContextHolder.clear()
+    ContextHolder.setUserContext(new UserContext(userId))
+  }
+
+  def logoutUser() {
+    ContextHolder.clear()
   }
 }

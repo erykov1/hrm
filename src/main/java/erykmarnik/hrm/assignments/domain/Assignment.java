@@ -19,12 +19,19 @@ import java.time.Instant;
 class Assignment {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "assignment_id")
   Long assignmentId;
+  @Column(name = "user_id")
   Long userId;
+  @Column(name = "object_id")
   Long objectId;
+  @Column(name = "assigned_at")
   Instant assignedAt;
+  @Column(name = "done_at")
   Instant doneAt;
+  @Column(name = "assignment_created_by")
   Long assignmentCreatedBy;
+  @Column(name = "assignment_status")
   @Enumerated(EnumType.STRING)
   AssignmentStatus assignmentStatus;
 

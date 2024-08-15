@@ -1,5 +1,5 @@
 CREATE TABLE assignment (
-    assignmentId BIGSERIAL PRIMARY KEY,
+    assignment_id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     object_id BIGINT NOT NULL,
     assigned_at TIMESTAMP WITH TIME ZONE,
