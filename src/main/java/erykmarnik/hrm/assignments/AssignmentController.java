@@ -51,6 +51,12 @@ class AssignmentController {
     return ResponseEntity.ok(assignmentFacade.getAssignmentById(assignmentId));
   }
 
+  @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
+  @GetMapping("/user")
+  ResponseEntity<List<AssignmentDto>> getUserAssignments() {
+    return ResponseEntity.ok(assignmentFacade.getUserAssignments());
+  }
+
   @PreAuthorize("hasRole('ADMIN')")
   @GetMapping("/all")
   ResponseEntity<List<AssignmentDto>> getAllAssignments() {

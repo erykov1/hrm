@@ -52,6 +52,14 @@ public class AssignmentFacade {
             () -> new AssignmentNotFoundException(assignmentId)).dto();
   }
 
+  public List<AssignmentDto> getUserAssignments() {
+    Long userId = ContextHolder.getUserContext().getUserId();
+    log.info("getting assignments for user: " + userId);
+    return assignmentRepository.findUserAssignments(userId).stream()
+            .map(Assignment::dto)
+            .collect(Collectors.toList());
+  }
+
   public List<AssignmentDto> getAllAssignments() {
     log.info("finding all assignments");
     return assignmentRepository.findAll().stream().map(Assignment::dto).collect(Collectors.toList());

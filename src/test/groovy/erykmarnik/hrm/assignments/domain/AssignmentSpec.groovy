@@ -92,4 +92,17 @@ class AssignmentSpec extends ContextSpec implements TimeSample, AssignmentSample
     then: "assignment is not found"
       thrown(AssignmentNotFoundException)
   }
+
+  def "Should get user assignments"() {
+    given: "admin $ADMIN_JANE creates assignment for user $EMPLOYEE_MIKE to object $OBJECT_ID"
+      assignmentFacade.createAssignment(new CreateAssignmentDto(EMPLOYEE_MIKE, OBJECT_ID))
+    and: "$EMPLOYEE_MIKE logs in"
+      loginUser(EMPLOYEE_MIKE)
+    when: "user $EMPLOYEE_MIKE asks for his assignments"
+      List<AssignmentDto> assignments = assignmentFacade.getUserAssignments()
+    then: "gets his assignments"
+      assignments == [createAssignment(assignmentId: assignments[0].assignmentId, userId: EMPLOYEE_MIKE, objectId: OBJECT_ID, assignedAt: NOW,
+              doneAt: null, assignmentCreatedBy: ADMIN_JANE, assignmentStatus: AssignmentStatusDto.NOT_STARTED
+      )]
+  }
 }

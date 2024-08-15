@@ -54,4 +54,11 @@ class AssignmentApiFacade extends HrmApi {
             mapper.getTypeFactory().constructCollectionType(List.class, AssignmentDto.class))
     value
   }
+
+  List<AssignmentDto> getUserAssignments() {
+    ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/assignment/user").contentType(MediaType.APPLICATION_JSON))
+    List<AssignmentDto> value = mapper.readValue(perform.andReturn().response.getContentAsString(StandardCharsets.UTF_8),
+            mapper.getTypeFactory().constructCollectionType(List.class, AssignmentDto.class))
+    value
+  }
 }

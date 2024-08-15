@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.FluentQuery;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 class InMemoryAssignmentRepository implements AssignmentRepository {
@@ -181,5 +182,12 @@ class InMemoryAssignmentRepository implements AssignmentRepository {
     return table.values().stream()
             .filter(value -> value.dto().getObjectId().equals(objectId) && value.dto().getUserId().equals(userId))
             .findFirst();
+  }
+
+  @Override
+  public List<Assignment> findUserAssignments(Long userId) {
+    return table.values().stream()
+            .filter(assignment -> assignment.dto().getUserId().equals(userId))
+            .collect(Collectors.toList());
   }
 }
