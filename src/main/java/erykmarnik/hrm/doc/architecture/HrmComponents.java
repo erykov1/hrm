@@ -20,12 +20,20 @@ class HrmComponents {
   Component authController;
   Component userFacade;
   Component securityFacade;
+  Component taskFacade;
+  Component taskController;
+  Component assignmentController;
+  Component assignmentFacade;
 
   HrmComponents(Container hrm) {
     userController = hrm.addComponent("user controller");
     authController = hrm.addComponent("auth controller");
     userFacade = hrm.addComponent("user facade");
     securityFacade = hrm.addComponent("security facade");
+    assignmentController = hrm.addComponent("assignment controller");
+    assignmentFacade = hrm.addComponent("assignment facade");
+    taskController = hrm.addComponent("task controller");
+    taskFacade = hrm.addComponent("task facade");
   }
 
   void createUsages(External external) {
@@ -51,6 +59,17 @@ class HrmComponents {
       external.getAdmin().uses(userController, "makes api call to delete user");
       userController.uses(userFacade, "asks to delete user");
       userFacade.uses(external.getDatabase(), "deletes user");
+      external.getAdmin().uses(taskController, "makes api call to create/delete/modify task");
+      external.getEmployee().uses(taskController, "makes api call to get task");
+      taskController.uses(taskFacade, "asks to create/modify/get tasks");
+      taskFacade.uses(external.getDatabase(), "inserts new tasks, modify, get tasks");
+      external.getAdmin().uses(assignmentController, "makes api call to create/delete assignments, get analytic data for assignments");
+      external.getEmployee().uses(assignmentController, "makes api call to set to done assignments");
+      assignmentController.uses(assignmentFacade, "asks to delete/create/set to done assignment, gets info about analytic data for assignments");
+      assignmentFacade.uses(external.getDatabase(), "inserts/deletes assignments, get data for assignments");
+      assignmentFacade.uses(userFacade, "gets user info for analytic data");
+      assignmentFacade.uses(taskFacade, "gets task info for analytic data");
+      external.getEmployee().uses(assignmentController, "makes api call to set to done assignments, gets assignments info");
     }
   }
 
@@ -68,5 +87,9 @@ class HrmComponents {
     contextView.add(external.getDatabase());
     contextView.add(external.getEmployee());
     contextView.add(external.getAdmin());
+    contextView.add(hrmComponents.getTaskController());
+    contextView.add(hrmComponents.getTaskFacade());
+    contextView.add(hrmComponents.getAssignmentController());
+    contextView.add(hrmComponents.getAssignmentFacade());
   }
 }
