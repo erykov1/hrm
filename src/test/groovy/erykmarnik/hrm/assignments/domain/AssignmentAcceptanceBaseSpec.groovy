@@ -2,6 +2,7 @@ package erykmarnik.hrm.assignments.domain
 
 import erykmarnik.hrm.assignments.dto.AssignmentDto
 import erykmarnik.hrm.assignments.dto.CreateAssignmentDto
+import erykmarnik.hrm.assignments.sample.AssignmentAnalyticSample
 import erykmarnik.hrm.assignments.sample.AssignmentSample
 import erykmarnik.hrm.integration.IntegrationSpec
 import erykmarnik.hrm.task.domain.TaskApiFacade
@@ -13,7 +14,7 @@ import erykmarnik.hrm.utils.ContextHolder
 import erykmarnik.hrm.utils.TimeApiFacade
 import erykmarnik.hrm.utils.sample.TimeSample
 
-class AssignmentAcceptanceBaseSpec extends IntegrationSpec implements UserSample, AssignmentSample, TaskSample, TimeSample {
+class AssignmentAcceptanceBaseSpec extends IntegrationSpec implements UserSample, AssignmentSample, TaskSample, TimeSample, AssignmentAnalyticSample {
   AssignmentApiFacade assignmentApiFacade
   UserApiFacade userApiFacade
   TaskApiFacade taskApiFacade
@@ -26,10 +27,10 @@ class AssignmentAcceptanceBaseSpec extends IntegrationSpec implements UserSample
     timeApiFacade = new TimeApiFacade(mockMvc, objectMapper)
   }
 
-  void deleteAssignment(Long assignmentId, Long userId) {
-    if (assignmentId != null) {
+  void deleteAssignment(AssignmentDto assignment, Long userId) {
+    if (assignment != null) {
       ContextHolder.setUserContext(new UserContext(userId))
-      assignmentApiFacade.deleteAssignment(assignmentId)
+      assignmentApiFacade.deleteAssignment(assignment.assignmentId)
     }
   }
 

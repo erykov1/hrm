@@ -190,4 +190,14 @@ class InMemoryAssignmentRepository implements AssignmentRepository {
             .filter(assignment -> assignment.dto().getUserId().equals(userId))
             .collect(Collectors.toList());
   }
+
+  @Override
+  public List<Assignment> findAllNotStarted() {
+    return null;
+  }
+
+  @Override
+  public List<Assignment> findAllDone() {
+    return null;
+  }
 }

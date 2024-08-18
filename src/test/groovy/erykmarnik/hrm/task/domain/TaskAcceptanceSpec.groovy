@@ -31,7 +31,7 @@ class TaskAcceptanceSpec extends IntegrationSpec implements TaskSample, TimeSamp
 
   def cleanup() {
     timeApiFacade.useSystemClock()
-    if (task.taskId != null) {
+    if (task != null) {
       taskApiFacade.deleteTask(task.getTaskId())
     }
     userApiFacade.deleteUser(jane.getUserId())

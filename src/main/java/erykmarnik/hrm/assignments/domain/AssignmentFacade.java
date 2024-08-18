@@ -1,5 +1,6 @@
 package erykmarnik.hrm.assignments.domain;
 
+import erykmarnik.hrm.assignments.dto.AssignmentAnalyticDto;
 import erykmarnik.hrm.assignments.dto.AssignmentDto;
 import erykmarnik.hrm.assignments.dto.CreateAssignmentDto;
 import erykmarnik.hrm.assignments.exception.AlreadyAssignedException;
@@ -24,6 +25,7 @@ public class AssignmentFacade {
   AssignmentCreator assignmentCreator;
   SecurityFacade securityFacade;
   InstantProvider instantProvider;
+  AssignmentAnalytic assignmentAnalytic;
 
   public AssignmentDto createAssignment(CreateAssignmentDto createAssignment) {
     log.info("creating assignment");
@@ -63,6 +65,21 @@ public class AssignmentFacade {
   public List<AssignmentDto> getAllAssignments() {
     log.info("finding all assignments");
     return assignmentRepository.findAll().stream().map(Assignment::dto).collect(Collectors.toList());
+  }
+
+  public List<AssignmentAnalyticDto> getAllUserAssignmentsFor(Long userId) {
+    log.info("getting all user assignments: " + userId);
+    return assignmentAnalytic.getAllUserAssignments(userId);
+  }
+
+  public List<AssignmentAnalyticDto> getAllNotStarted() {
+    log.info("getting all not started assignments");
+    return assignmentAnalytic.getAllNotStartedAssignments();
+  }
+
+  public List<AssignmentAnalyticDto> getAllDone() {
+    log.info("getting all done assignments");
+    return assignmentAnalytic.getAllDoneAssignments();
   }
 
   private void validateAssignmentOperation(Long userId, Long assignmentId) {

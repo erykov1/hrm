@@ -67,4 +67,13 @@ class UserAcceptanceSpec extends IntegrationSpec implements UserSample {
       List<UserDto> users = userApiFacade.getUsers()
       equalsUsers(users, [createUser(userId: user.userId)])
   }
+
+  def "Should get user by user id"() {
+    given: "there is employee"
+      user = userApiFacade.createEmployee(createNewUser())
+    when: "asks for user $user"
+      UserDto result = userApiFacade.getByUserId(user.userId)
+    then: "gets user $user"
+      result == user
+  }
 }

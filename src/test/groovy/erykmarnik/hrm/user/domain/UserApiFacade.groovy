@@ -42,6 +42,7 @@ class UserApiFacade extends HrmApi {
 
   List<UserDto> getUsers() {
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/user/all").contentType(MediaType.APPLICATION_JSON))
+    checkResponse(perform.andReturn().response)
     List<UserDto> value = mapper.readValue(perform.andReturn().response.getContentAsString(StandardCharsets.UTF_8),
             mapper.getTypeFactory().constructCollectionType(List.class, UserDto.class))
     value
@@ -60,5 +61,12 @@ class UserApiFacade extends HrmApi {
   void deleteUser(Long userId) {
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.delete("/api/user/delete/{userId}", userId))
     checkResponse(perform.andReturn().response)
+  }
+
+  UserDto getByUserId(Long userId) {
+    ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/user/{userId}", userId).contentType(MediaType.APPLICATION_JSON))
+    checkResponse(perform.andReturn().response)
+    UserDto value = mapper.readValue(perform.andReturn().response.getContentAsString(StandardCharsets.UTF_8), mapper.getTypeFactory().constructType(UserDto.class))
+    value
   }
 }

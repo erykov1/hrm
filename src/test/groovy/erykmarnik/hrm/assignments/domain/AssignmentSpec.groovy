@@ -14,7 +14,7 @@ import erykmarnik.hrm.assignments.exception.AssignmentNotFoundException
 
 class AssignmentSpec extends ContextSpec implements TimeSample, AssignmentSample, TaskSample {
   InstantProvider instantProvider = new InstantProvider()
-  AssignmentFacade assignmentFacade = new AssignmentConfiguration().assignmentFacade(instantProvider, securityFacade)
+  AssignmentFacade assignmentFacade = new AssignmentConfiguration().assignmentFacade(instantProvider, securityFacade, Stub(AssignmentAnalytic.class))
 
   def setup() {
     instantProvider.useFixedClock(NOW)

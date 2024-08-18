@@ -20,16 +20,14 @@ class AssignmentAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
     given: "there is admin $jane"
       jane = userApiFacade.createAdmin(createNewUser(username: "jane123", name: "Jane", surname: "Doe", email: "jane@mail.com"))
     and: "there is employee $mike"
-      mike = userApiFacade.createAdmin(createNewUser(username: "mike123", name: "Mike", surname: "Smith", email: "mike@mail.com"))
+      mike = userApiFacade.createEmployee(createNewUser(username: "mike123", name: "Mike", surname: "Smith", email: "mike@mail.com"))
     and: "there is task $onboarding"
       ContextHolder.setUserContext(new UserContext(jane.userId))
       onboarding = taskApiFacade.createTask(createNewTask(createdAt: NOW))
   }
 
   def cleanup() {
-    if (assignment != null) {
-      deleteAssignment(assignment.assignmentId, jane.userId)
-    }
+    deleteAssignment(assignment, jane.userId)
     userApiFacade.deleteUser(jane.userId)
     userApiFacade.deleteUser(mike.userId)
     taskApiFacade.deleteTask(onboarding.taskId)
@@ -50,14 +48,14 @@ class AssignmentAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
     given: "admin $jane assignes user $mike to task $onboarding"
       assignment = createAssignment(jane.userId, new CreateAssignmentDto(mike.userId, onboarding.taskId))
     when: "admin $jane deletes assignment $assignment"
-      deleteAssignment(assignment.assignmentId, jane.userId)
+      deleteAssignment(assignment, jane.userId)
     then: "assignment is removed"
       assignmentApiFacade.getAllAssignments() == []
   }
 
   def "Should set assignment to done"() {
     given: "admin $jane assignes user $mike to task $onboarding"
-      assignment = createAssignment(jane.userId, new CreateAssignmentDto(mike.userId, this.onboarding.taskId))
+      assignment = createAssignment(jane.userId, new CreateAssignmentDto(mike.userId, onboarding.taskId))
     and: "employee $mike logs in $WEEK_LATER"
       timeApiFacade.useFixedClock(WEEK_LATER)
       ContextHolder.setUserContext(new UserContext(mike.userId))
@@ -72,7 +70,7 @@ class AssignmentAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
 
   def "Should get user assignment"() {
     given: "admin $jane assignes user $mike to task $onboarding"
-      createAssignment(jane.userId, new CreateAssignmentDto(mike.userId, this.onboarding.taskId))
+      assignment = createAssignment(jane.userId, new CreateAssignmentDto(mike.userId, onboarding.taskId))
     when: "$mike asks for assignments"
       List<AssignmentDto> assignments = getUserAssignment(mike.userId)
     then: "$mike gets his all assignments"

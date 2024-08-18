@@ -43,6 +43,12 @@ class UserController {
     return ResponseEntity.ok(userFacade.getAllUsers());
   }
 
+  @GetMapping("/{userId}")
+  @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
+  ResponseEntity<UserDto> getUserById(@PathVariable Long userId) {
+    return ResponseEntity.ok(userFacade.getByUserId(userId));
+  }
+
   @PutMapping("/modify/{userId}")
   @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
   ResponseEntity<UserDto> modifyUser(@RequestBody ModifyUserDto modifyUserDto, @PathVariable Long userId) {

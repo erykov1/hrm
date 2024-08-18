@@ -1,6 +1,7 @@
 package erykmarnik.hrm.assignments.domain
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import erykmarnik.hrm.assignments.dto.AssignmentAnalyticDto
 import erykmarnik.hrm.assignments.dto.AssignmentDto
 import erykmarnik.hrm.assignments.dto.CreateAssignmentDto
 import erykmarnik.hrm.integration.HrmApi
@@ -50,6 +51,7 @@ class AssignmentApiFacade extends HrmApi {
 
   List<AssignmentDto> getAllAssignments() {
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/assignment/all").contentType(MediaType.APPLICATION_JSON))
+    checkResponse(perform.andReturn().response)
     List<AssignmentDto> value = mapper.readValue(perform.andReturn().response.getContentAsString(StandardCharsets.UTF_8),
             mapper.getTypeFactory().constructCollectionType(List.class, AssignmentDto.class))
     value
@@ -57,8 +59,33 @@ class AssignmentApiFacade extends HrmApi {
 
   List<AssignmentDto> getUserAssignments() {
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/assignment/user").contentType(MediaType.APPLICATION_JSON))
+    checkResponse(perform.andReturn().response)
     List<AssignmentDto> value = mapper.readValue(perform.andReturn().response.getContentAsString(StandardCharsets.UTF_8),
             mapper.getTypeFactory().constructCollectionType(List.class, AssignmentDto.class))
+    value
+  }
+
+  List<AssignmentAnalyticDto> getAllDoneAssignments() {
+    ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/assignment/all/done").contentType(MediaType.APPLICATION_JSON))
+    checkResponse(perform.andReturn().response)
+    List<AssignmentAnalyticDto> value = mapper.readValue(perform.andReturn().response.getContentAsString(StandardCharsets.UTF_8),
+            mapper.getTypeFactory().constructCollectionType(List.class, AssignmentAnalyticDto.class))
+    value
+  }
+
+  List<AssignmentAnalyticDto> getAllNotStartedAssignments() {
+    ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/assignment/all/notStarted").contentType(MediaType.APPLICATION_JSON))
+    checkResponse(perform.andReturn().response)
+    List<AssignmentAnalyticDto> value = mapper.readValue(perform.andReturn().response.getContentAsString(StandardCharsets.UTF_8),
+            mapper.getTypeFactory().constructCollectionType(List.class, AssignmentAnalyticDto.class))
+    value
+  }
+
+  List<AssignmentAnalyticDto> getAllForUser(Long userId) {
+    ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/assignment/all/{userId}", userId).contentType(MediaType.APPLICATION_JSON))
+    checkResponse(perform.andReturn().response)
+    List<AssignmentAnalyticDto> value = mapper.readValue(perform.andReturn().response.getContentAsString(StandardCharsets.UTF_8),
+            mapper.getTypeFactory().constructCollectionType(List.class, AssignmentAnalyticDto.class))
     value
   }
 }
