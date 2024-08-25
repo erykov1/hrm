@@ -1,6 +1,7 @@
 package erykmarnik.hrm.assignments.domain;
 
 import erykmarnik.hrm.assignments.dto.AssignmentDto;
+import erykmarnik.hrm.assignments.dto.CreateAssignmentNoteDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,9 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "assignment")
@@ -34,6 +38,8 @@ class Assignment {
   @Column(name = "assignment_status")
   @Enumerated(EnumType.STRING)
   AssignmentStatus assignmentStatus;
+  @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  List<AssignmentNote> assignmentNotes = new ArrayList<>();
 
   void setAssignmentId(Long assignmentId) {
     this.assignmentId = assignmentId;
@@ -61,5 +67,22 @@ class Assignment {
             .assignmentCreatedBy(assignmentCreatedBy)
             .assignmentStatus(AssignmentStatus.DONE)
             .build();
+  }
+
+  AssignmentNote addAssignmentNote(CreateAssignmentNoteDto createAssignmentNote) {
+    if (assignmentNotes == null) {
+      assignmentNotes = new ArrayList<>();
+    }
+    AssignmentNote assignmentNote = AssignmentNote.builder()
+            .noteId(UUID.randomUUID())
+            .noteContent(createAssignmentNote.getNoteContent())
+            .assignment(this)
+            .build();
+    this.assignmentNotes.add(assignmentNote);
+    return assignmentNote;
+  }
+
+  void removeAssignmentNote(AssignmentNote assignmentNote) {
+    this.assignmentNotes.remove(assignmentNote);
   }
 }

@@ -20,13 +20,15 @@ class AssignmentConfiguration {
 
   @Bean
   AssignmentFacade assignmentFacade(AssignmentRepository assignmentRepository, SecurityFacade securityFacade,
-                                    InstantProvider instantProvider, AssignmentAnalytic assignmentAnalytic) {
+                                    InstantProvider instantProvider, AssignmentAnalytic assignmentAnalytic,
+                                    AssignmentNoteRepository assignmentNoteRepository) {
     return AssignmentFacade.builder()
             .assignmentRepository(assignmentRepository)
             .securityFacade(securityFacade)
             .assignmentCreator(new AssignmentCreator(instantProvider))
             .instantProvider(instantProvider)
             .assignmentAnalytic(assignmentAnalytic)
+            .assignmentNoteRepository(assignmentNoteRepository)
             .build();
   }
 
@@ -37,6 +39,7 @@ class AssignmentConfiguration {
             .instantProvider(instantProvider)
             .securityFacade(securityFacade)
             .assignmentAnalytic(assignmentAnalytic)
+            .assignmentNoteRepository(new InMemoryAssignmentNoteRepository())
             .build();
   }
 }

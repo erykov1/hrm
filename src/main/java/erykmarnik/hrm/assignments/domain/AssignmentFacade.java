@@ -1,10 +1,9 @@
 package erykmarnik.hrm.assignments.domain;
 
-import erykmarnik.hrm.assignments.dto.AssignmentAnalyticDto;
-import erykmarnik.hrm.assignments.dto.AssignmentDto;
-import erykmarnik.hrm.assignments.dto.CreateAssignmentDto;
+import erykmarnik.hrm.assignments.dto.*;
 import erykmarnik.hrm.assignments.exception.AlreadyAssignedException;
 import erykmarnik.hrm.assignments.exception.AssignmentNotFoundException;
+import erykmarnik.hrm.assignments.exception.AssignmentNoteNotFoundException;
 import erykmarnik.hrm.assignments.exception.ForbiddenAssignmentOperationException;
 import erykmarnik.hrm.security.SecurityFacade;
 import erykmarnik.hrm.utils.ContextHolder;
@@ -15,6 +14,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Builder
@@ -26,6 +26,7 @@ public class AssignmentFacade {
   SecurityFacade securityFacade;
   InstantProvider instantProvider;
   AssignmentAnalytic assignmentAnalytic;
+  AssignmentNoteRepository assignmentNoteRepository;
 
   public AssignmentDto createAssignment(CreateAssignmentDto createAssignment) {
     log.info("creating assignment");
@@ -82,7 +83,45 @@ public class AssignmentFacade {
     return assignmentAnalytic.getAllDoneAssignments();
   }
 
+  public AssignmentNoteDto addAssignmentNote(CreateAssignmentNoteDto note) {
+    log.info("creating note assignment");
+    validateAssignmentOperation(ContextHolder.getUserContext().getUserId(), note.getAssignmentId());
+    return assignmentNoteRepository.save(getAssignment(note.getAssignmentId()).addAssignmentNote(note)).dto();
+  }
+
+  public void deleteAssignmentNote(UUID noteId) {
+    log.info("deleting assignment note: " + noteId);
+    AssignmentNote assignmentNote = getAssignmentNote(noteId);
+    validateNoteOperation(ContextHolder.getUserContext().getUserId(), noteId);
+    getAssignment(assignmentNote.dto().getAssignmentId()).removeAssignmentNote(assignmentNote);
+    assignmentNoteRepository.deleteById(noteId);
+  }
+
+  public List<AssignmentNoteDto> getNotesForAssignment(Long assignmentId) {
+    log.info("getting notes for assignment: " + assignmentId);
+    validateAssignmentOperation(ContextHolder.getUserContext().getUserId(), assignmentId);
+    return assignmentNoteRepository.findNotesForAssignment(assignmentId).stream()
+            .map(AssignmentNote::dto)
+            .collect(Collectors.toList());
+  }
+
+  public AssignmentNoteDto modifyAssignmentNote(UUID noteId, AssignmentNoteModifyDto noteModify) {
+    log.info("modifying note " + noteId + " content");
+    validateNoteOperation(ContextHolder.getUserContext().getUserId(), noteId);
+    AssignmentNote assignmentNote = getAssignmentNote(noteId);
+    return assignmentNote.modifyAssignmentNote(noteModify).dto();
+  }
+
   private void validateAssignmentOperation(Long userId, Long assignmentId) {
+    Assignment assignment = getAssignment(assignmentId);
+    if (!securityFacade.isAdmin(userId) && !assignment.dto().getAssignmentCreatedBy().equals(userId)
+            && !assignment.dto().getUserId().equals(userId)) {
+      throw new ForbiddenAssignmentOperationException(assignmentId);
+    }
+  }
+
+  private void validateNoteOperation(Long userId, UUID noteId) {
+    Long assignmentId = getAssignmentNote(noteId).dto().getAssignmentId();
     Assignment assignment = getAssignment(assignmentId);
     if (!securityFacade.isAdmin(userId) && !assignment.dto().getAssignmentCreatedBy().equals(userId)
             && !assignment.dto().getUserId().equals(userId)) {
@@ -101,6 +140,10 @@ public class AssignmentFacade {
 
   private Assignment getAssignment(Long assignmentId) {
     return assignmentRepository.findByAssignmentId(assignmentId).orElseThrow(() -> new AssignmentNotFoundException(assignmentId));
+  }
+
+  private AssignmentNote getAssignmentNote(UUID noteId) {
+    return assignmentNoteRepository.findByNoteId(noteId).orElseThrow(() -> new AssignmentNoteNotFoundException(noteId));
   }
 
   private void validateAssignmentCreation(Long userId, Long objectId) {
