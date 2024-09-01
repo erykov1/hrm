@@ -12,6 +12,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,7 +27,6 @@ public class AssignmentFacade {
   SecurityFacade securityFacade;
   InstantProvider instantProvider;
   AssignmentAnalytic assignmentAnalytic;
-  AssignmentNoteRepository assignmentNoteRepository;
 
   public AssignmentDto createAssignment(CreateAssignmentDto createAssignment) {
     log.info("creating assignment");
@@ -86,21 +86,23 @@ public class AssignmentFacade {
   public AssignmentNoteDto addAssignmentNote(CreateAssignmentNoteDto note) {
     log.info("creating note assignment");
     validateAssignmentOperation(ContextHolder.getUserContext().getUserId(), note.getAssignmentId());
-    return assignmentNoteRepository.save(getAssignment(note.getAssignmentId()).addAssignmentNote(note)).dto();
+    Assignment assignment = getAssignment(note.getAssignmentId());
+    AssignmentNoteDto assignmentNote = assignment.addAssignmentNote(note).dto();
+    assignmentRepository.save(assignment);
+    return assignmentNote;
   }
 
   public void deleteAssignmentNote(UUID noteId) {
     log.info("deleting assignment note: " + noteId);
     AssignmentNote assignmentNote = getAssignmentNote(noteId);
     validateNoteOperation(ContextHolder.getUserContext().getUserId(), noteId);
-    getAssignment(assignmentNote.dto().getAssignmentId()).removeAssignmentNote(assignmentNote);
-    assignmentNoteRepository.deleteById(noteId);
+    assignmentRepository.save(getAssignment(assignmentNote.dto().getAssignmentId()).removeAssignmentNote(assignmentNote));
   }
 
   public List<AssignmentNoteDto> getNotesForAssignment(Long assignmentId) {
     log.info("getting notes for assignment: " + assignmentId);
     validateAssignmentOperation(ContextHolder.getUserContext().getUserId(), assignmentId);
-    return assignmentNoteRepository.findNotesForAssignment(assignmentId).stream()
+    return getAssignment(assignmentId).getAssignmentNotes().stream()
             .map(AssignmentNote::dto)
             .collect(Collectors.toList());
   }
@@ -109,6 +111,8 @@ public class AssignmentFacade {
     log.info("modifying note " + noteId + " content");
     validateNoteOperation(ContextHolder.getUserContext().getUserId(), noteId);
     AssignmentNote assignmentNote = getAssignmentNote(noteId);
+    Assignment assignment = getAssignment(assignmentNote.dto().getAssignmentId());
+    assignmentRepository.save(assignment.modifyAssignmentNote(noteId, noteModify));
     return assignmentNote.modifyAssignmentNote(noteModify).dto();
   }
 
@@ -129,6 +133,10 @@ public class AssignmentFacade {
     }
   }
 
+  private AssignmentNote getAssignmentNote(UUID noteId) {
+    return assignmentRepository.findAssignmentNoteById(noteId).orElseThrow(() -> new AssignmentNoteNotFoundException(noteId));
+  }
+
   private void validateDeleteAssignment(Long userId, Long assignmentId) {
     Optional<Assignment> assignment = assignmentRepository.findByAssignmentId(assignmentId);
     if (assignment.isPresent()) {
@@ -140,10 +148,6 @@ public class AssignmentFacade {
 
   private Assignment getAssignment(Long assignmentId) {
     return assignmentRepository.findByAssignmentId(assignmentId).orElseThrow(() -> new AssignmentNotFoundException(assignmentId));
-  }
-
-  private AssignmentNote getAssignmentNote(UUID noteId) {
-    return assignmentNoteRepository.findByNoteId(noteId).orElseThrow(() -> new AssignmentNoteNotFoundException(noteId));
   }
 
   private void validateAssignmentCreation(Long userId, Long objectId) {

@@ -1,9 +1,7 @@
 package erykmarnik.hrm.assignments;
 
 import erykmarnik.hrm.assignments.domain.AssignmentFacade;
-import erykmarnik.hrm.assignments.dto.AssignmentAnalyticDto;
-import erykmarnik.hrm.assignments.dto.AssignmentDto;
-import erykmarnik.hrm.assignments.dto.CreateAssignmentDto;
+import erykmarnik.hrm.assignments.dto.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -11,8 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/assignment")
@@ -80,5 +78,30 @@ class AssignmentController {
   @GetMapping("/all/{userId}")
   ResponseEntity<List<AssignmentAnalyticDto>> getAllForUser(@PathVariable Long userId) {
     return ResponseEntity.ok(assignmentFacade.getAllUserAssignmentsFor(userId));
+  }
+
+  @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
+  @PostMapping("/note/add")
+  ResponseEntity<AssignmentNoteDto> addAssignmentNote(@RequestBody CreateAssignmentNoteDto note) {
+    return ResponseEntity.ok(assignmentFacade.addAssignmentNote(note));
+  }
+
+  @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
+  @DeleteMapping("/note/delete/{noteId}")
+  ResponseEntity<Void> deleteAssignmentNote(@PathVariable UUID noteId) {
+    assignmentFacade.deleteAssignmentNote(noteId);
+    return ResponseEntity.ok().build();
+  }
+
+  @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
+  @GetMapping("/note/{assignmentId}")
+  ResponseEntity<List<AssignmentNoteDto>> getAssignmentNotes(@PathVariable Long assignmentId) {
+    return ResponseEntity.ok(assignmentFacade.getNotesForAssignment(assignmentId));
+  }
+
+  @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
+  @PutMapping("/note/modify/{noteId}")
+  ResponseEntity<AssignmentNoteDto> modifyAssignmentNote(@PathVariable UUID noteId, @RequestBody AssignmentNoteModifyDto noteModify) {
+    return ResponseEntity.ok(assignmentFacade.modifyAssignmentNote(noteId, noteModify));
   }
 }

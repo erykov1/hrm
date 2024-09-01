@@ -1,7 +1,9 @@
 package erykmarnik.hrm.assignments.domain;
 
 import erykmarnik.hrm.assignments.dto.AssignmentDto;
+import erykmarnik.hrm.assignments.dto.AssignmentNoteModifyDto;
 import erykmarnik.hrm.assignments.dto.CreateAssignmentNoteDto;
+import erykmarnik.hrm.assignments.exception.AssignmentNoteNotFoundException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -38,7 +40,7 @@ class Assignment {
   @Column(name = "assignment_status")
   @Enumerated(EnumType.STRING)
   AssignmentStatus assignmentStatus;
-  @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL, orphanRemoval = true)
   List<AssignmentNote> assignmentNotes = new ArrayList<>();
 
   void setAssignmentId(Long assignmentId) {
@@ -66,6 +68,7 @@ class Assignment {
             .doneAt(doneAt)
             .assignmentCreatedBy(assignmentCreatedBy)
             .assignmentStatus(AssignmentStatus.DONE)
+            .assignmentNotes(assignmentNotes)
             .build();
   }
 
@@ -82,7 +85,25 @@ class Assignment {
     return assignmentNote;
   }
 
-  void removeAssignmentNote(AssignmentNote assignmentNote) {
+  Assignment removeAssignmentNote(AssignmentNote assignmentNote) {
     this.assignmentNotes.remove(assignmentNote);
+    return this;
+  }
+
+  List<AssignmentNote> getAssignmentNotes() {
+    return this.assignmentNotes;
+  }
+
+  AssignmentNote getAssignmentNote(UUID noteId) {
+    return this.assignmentNotes.stream()
+            .filter(note -> note.dto().getNoteId().equals(noteId))
+            .findFirst().orElseThrow(() -> new AssignmentNoteNotFoundException(noteId));
+  }
+
+  Assignment modifyAssignmentNote(UUID noteId, AssignmentNoteModifyDto noteModify) {
+    AssignmentNote assignmentNote = getAssignmentNote(noteId);
+    this.assignmentNotes.remove(assignmentNote);
+    this.assignmentNotes.add(assignmentNote.modifyAssignmentNote(noteModify));
+    return this;
   }
 }

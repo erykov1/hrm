@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 interface AssignmentRepository extends JpaRepository<Assignment, Long> {
   Optional<Assignment> findByAssignmentId(Long assignmentId);
@@ -17,4 +18,6 @@ interface AssignmentRepository extends JpaRepository<Assignment, Long> {
   List<Assignment> findAllNotStarted();
   @Query("SELECT a FROM Assignment a WHERE a.assignmentStatus = 'DONE'")
   List<Assignment> findAllDone();
+  @Query("SELECT an FROM AssignmentNote an WHERE an.noteId = :noteId")
+  Optional<AssignmentNote> findAssignmentNoteById(@Param("noteId") UUID noteId);
 }

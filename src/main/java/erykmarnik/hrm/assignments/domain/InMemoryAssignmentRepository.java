@@ -200,4 +200,12 @@ class InMemoryAssignmentRepository implements AssignmentRepository {
   public List<Assignment> findAllDone() {
     return null;
   }
+
+  @Override
+  public Optional<AssignmentNote> findAssignmentNoteById(UUID noteId) {
+    return table.values().stream()
+            .filter(assignment -> assignment.getAssignmentNotes().stream().anyMatch(note -> note.dto().getNoteId().equals(noteId)))
+            .map(assignment -> assignment.getAssignmentNote(noteId))
+            .findFirst();
+  }
 }

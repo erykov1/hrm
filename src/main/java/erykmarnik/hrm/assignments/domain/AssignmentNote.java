@@ -3,16 +3,14 @@ package erykmarnik.hrm.assignments.domain;
 import erykmarnik.hrm.assignments.dto.AssignmentNoteDto;
 import erykmarnik.hrm.assignments.dto.AssignmentNoteModifyDto;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.UUID;
 
 @Entity
 @Table(name = "assignment_note")
+@EqualsAndHashCode
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
