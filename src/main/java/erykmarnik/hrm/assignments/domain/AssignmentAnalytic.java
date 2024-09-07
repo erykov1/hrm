@@ -77,6 +77,14 @@ class AssignmentAnalytic {
     }).toList();
   }
 
+  String getUserMail(Long userId) {
+    return userFacade.getByUserId(userId).getEmail();
+  }
+
+  String getTaskName(Long taskId) {
+    return taskFacade.findByTaskId(taskId).getTaskName();
+  }
+
   private Long getMinutesTakenToDoneTask(Assignment assignment) {
     if (assignment.dto().getDoneAt() != null) {
       return Duration.between(assignment.dto().getAssignedAt(), assignment.dto().getDoneAt()).toMinutes();

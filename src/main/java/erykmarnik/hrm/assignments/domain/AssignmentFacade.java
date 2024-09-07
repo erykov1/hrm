@@ -27,16 +27,22 @@ public class AssignmentFacade {
   SecurityFacade securityFacade;
   InstantProvider instantProvider;
   AssignmentAnalytic assignmentAnalytic;
+  EventPublisher eventPublisher;
 
   public AssignmentDto createAssignment(CreateAssignmentDto createAssignment) {
     log.info("creating assignment");
     validateAssignmentCreation(createAssignment.getUserId(), createAssignment.getObjectId());
+    eventPublisher.emmitAssignationAdded(assignmentAnalytic.getUserMail(createAssignment.getUserId()),
+            assignmentAnalytic.getTaskName(createAssignment.getObjectId()));
     return assignmentRepository.save(assignmentCreator.createAssignment(createAssignment)).dto();
   }
 
   public void deleteAssignment(Long assignmentId) {
     log.info("deleting assignment: " + assignmentId);
     validateDeleteAssignment(ContextHolder.getUserContext().getUserId(), assignmentId);
+    AssignmentDto assignment = getAssignmentById(assignmentId);
+    eventPublisher.emmitAssignationRemoved(assignmentAnalytic.getUserMail(assignment.getUserId()),
+            assignmentAnalytic.getTaskName(assignment.getObjectId()));
     assignmentRepository.deleteById(assignmentId);
   }
 
@@ -45,6 +51,8 @@ public class AssignmentFacade {
     validateAssignmentOperation(ContextHolder.getUserContext().getUserId(), assignmentId);
     Assignment assignment = assignmentRepository.findByAssignmentId(assignmentId).orElseThrow(
             () -> new AssignmentNotFoundException(assignmentId));
+    eventPublisher.emmitAssignationStatusChanged(assignmentAnalytic.getUserMail(assignment.dto().getUserId()),
+            assignmentAnalytic.getTaskName(assignment.dto().getObjectId()));
     assignmentRepository.save(assignment.setToDone(instantProvider.now()));
   }
 

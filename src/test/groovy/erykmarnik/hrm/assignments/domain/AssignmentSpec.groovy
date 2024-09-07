@@ -11,10 +11,13 @@ import erykmarnik.hrm.utils.sample.TimeSample
 import erykmarnik.hrm.assignments.exception.AlreadyAssignedException
 import erykmarnik.hrm.assignments.exception.ForbiddenAssignmentOperationException
 import erykmarnik.hrm.assignments.exception.AssignmentNotFoundException
+import org.springframework.context.ApplicationEventPublisher
 
 class AssignmentSpec extends ContextSpec implements TimeSample, AssignmentSample, TaskSample {
   InstantProvider instantProvider = new InstantProvider()
-  AssignmentFacade assignmentFacade = new AssignmentConfiguration().assignmentFacade(instantProvider, securityFacade, Stub(AssignmentAnalytic.class))
+  ApplicationEventPublisher applicationEventPublisher = Mock(ApplicationEventPublisher.class)
+  AssignmentFacade assignmentFacade = new AssignmentConfiguration().assignmentFacade(instantProvider, securityFacade,
+          Stub(AssignmentAnalytic.class), applicationEventPublisher)
 
   def setup() {
     instantProvider.useFixedClock(NOW)
