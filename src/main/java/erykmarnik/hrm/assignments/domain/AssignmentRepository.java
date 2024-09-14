@@ -11,7 +11,7 @@ import java.util.UUID;
 interface AssignmentRepository extends JpaRepository<Assignment, Long> {
   Optional<Assignment> findByAssignmentId(Long assignmentId);
   @Query("SELECT a FROM Assignment a WHERE a.objectId = :objectId AND a.userId = :userId")
-  Optional<Assignment> findByObjectIdAndUserId(@Param("objectId") Long objectId, @Param("userId") Long userId);
+  Optional<Assignment> findByObjectIdAndUserId(@Param("objectId") UUID objectId, @Param("userId") Long userId);
   @Query("SELECT a FROM Assignment a WHERE a.userId = :userId")
   List<Assignment> findUserAssignments(@Param("userId") Long userId);
   @Query("SELECT a FROM Assignment a WHERE a.assignmentStatus = 'NOT_STARTED'")

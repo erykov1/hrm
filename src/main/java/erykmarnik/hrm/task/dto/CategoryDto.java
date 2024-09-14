@@ -1,18 +1,20 @@
 package erykmarnik.hrm.task.dto;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
+
 import java.time.Instant;
 
 @Getter
-@AllArgsConstructor
+@EqualsAndHashCode
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class CreateTaskDto {
-  String taskName;
-  String description;
+public class CategoryDto {
   Long categoryId;
+  String categoryName;
+  Long createdBy;
+  Instant createdAt;
 }

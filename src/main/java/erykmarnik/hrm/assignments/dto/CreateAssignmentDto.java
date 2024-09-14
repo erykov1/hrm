@@ -6,11 +6,12 @@ import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CreateAssignmentDto {
   Long userId;
-  Long objectId;
+  UUID objectId;
 }

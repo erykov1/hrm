@@ -8,8 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-
 import java.time.Instant;
+import java.util.UUID;
 
 
 @Entity
@@ -20,12 +20,14 @@ import java.time.Instant;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 class Task {
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  Long taskId;
+  UUID taskId;
   Instant createdAt;
   Long createdBy;
   String taskName;
   String description;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "category_id")
+  Category category;
 
   TaskDto dto() {
     return TaskDto.builder()
@@ -34,20 +36,18 @@ class Task {
             .createdBy(createdBy)
             .taskName(taskName)
             .description(description)
+            .categoryId(category.categoryDto().getCategoryId())
             .build();
   }
 
-  Task modifyTask(ModifyTaskDto modifyTaskDto) {
+  Task modifyTask(ModifyTaskDto modifyTaskDto, Category category) {
     return Task.builder()
             .taskId(taskId)
             .createdAt(createdAt)
             .createdBy(createdBy)
             .taskName(modifyTaskDto.getTaskName() == null ? taskName : modifyTaskDto.getTaskName())
             .description(modifyTaskDto.getDescription() == null ? description : modifyTaskDto.getDescription())
+            .category(category)
             .build();
-  }
-
-  void setTaskId(Long taskId) {
-    this.taskId = taskId;
   }
 }

@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Builder
 @Getter
@@ -15,7 +16,7 @@ import java.time.Instant;
 public class AssignmentDto {
   Long assignmentId;
   Long userId;
-  Long objectId;
+  UUID objectId;
   Instant assignedAt;
   Instant doneAt;
   Long assignmentCreatedBy;

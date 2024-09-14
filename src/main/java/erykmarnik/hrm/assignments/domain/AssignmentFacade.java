@@ -158,7 +158,7 @@ public class AssignmentFacade {
     return assignmentRepository.findByAssignmentId(assignmentId).orElseThrow(() -> new AssignmentNotFoundException(assignmentId));
   }
 
-  private void validateAssignmentCreation(Long userId, Long objectId) {
+  private void validateAssignmentCreation(Long userId, UUID objectId) {
     if (assignmentRepository.findByObjectIdAndUserId(objectId, userId).isPresent()) {
       throw new AlreadyAssignedException(userId, objectId);
     }

@@ -178,7 +178,7 @@ class InMemoryAssignmentRepository implements AssignmentRepository {
   }
 
   @Override
-  public Optional<Assignment> findByObjectIdAndUserId(Long objectId, Long userId) {
+  public Optional<Assignment> findByObjectIdAndUserId(UUID objectId, Long userId) {
     return table.values().stream()
             .filter(value -> value.dto().getObjectId().equals(objectId) && value.dto().getUserId().equals(userId))
             .findFirst();

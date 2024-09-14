@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/task")
@@ -35,19 +36,19 @@ class TaskController {
 
   @PreAuthorize("hasRole('ADMIN')")
   @PutMapping("/{taskId}/modify")
-  ResponseEntity<TaskDto> modifyTask(@PathVariable Long taskId, @RequestBody ModifyTaskDto modifyTask) {
+  ResponseEntity<TaskDto> modifyTask(@PathVariable UUID taskId, @RequestBody ModifyTaskDto modifyTask) {
     return ResponseEntity.ok(taskFacade.modifyTask(taskId, modifyTask));
   }
 
   @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
   @GetMapping("/{taskId}")
-  ResponseEntity<TaskDto> getTask(@PathVariable Long taskId) {
+  ResponseEntity<TaskDto> getTask(@PathVariable UUID taskId) {
     return ResponseEntity.ok(taskFacade.findByTaskId(taskId));
   }
 
   @PreAuthorize("hasRole('ADMIN')")
   @DeleteMapping("/{taskId}/delete")
-  ResponseEntity<Void> deleteTask(@PathVariable Long taskId) {
+  ResponseEntity<Void> deleteTask(@PathVariable UUID taskId) {
     taskFacade.deleteTask(taskId);
     return ResponseEntity.ok().build();
   }

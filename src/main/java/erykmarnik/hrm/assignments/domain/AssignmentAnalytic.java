@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -81,7 +82,7 @@ class AssignmentAnalytic {
     return userFacade.getByUserId(userId).getEmail();
   }
 
-  String getTaskName(Long taskId) {
+  String getTaskName(UUID taskId) {
     return taskFacade.findByTaskId(taskId).getTaskName();
   }
 

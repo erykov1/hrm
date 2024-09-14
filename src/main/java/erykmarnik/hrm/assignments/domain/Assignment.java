@@ -30,7 +30,7 @@ class Assignment {
   @Column(name = "user_id")
   Long userId;
   @Column(name = "object_id")
-  Long objectId;
+  UUID objectId;
   @Column(name = "assigned_at")
   Instant assignedAt;
   @Column(name = "done_at")

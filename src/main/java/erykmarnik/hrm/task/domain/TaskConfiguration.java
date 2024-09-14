@@ -10,11 +10,11 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 class TaskConfiguration {
   @Bean
-  TaskFacade taskFacade(InstantProvider instantProvider, TaskRepository taskRepository, SecurityFacade securityFacade) {
+  TaskFacade taskFacade(InstantProvider instantProvider, CategoryRepository categoryRepository, SecurityFacade securityFacade) {
     return TaskFacade.builder()
             .taskCreator(new TaskCreator(instantProvider))
             .instantProvider(instantProvider)
-            .taskRepository(taskRepository)
+            .categoryRepository(categoryRepository)
             .securityFacade(securityFacade)
             .build();
   }
@@ -23,7 +23,7 @@ class TaskConfiguration {
     return TaskFacade.builder()
             .taskCreator(new TaskCreator(instantProvider))
             .instantProvider(instantProvider)
-            .taskRepository(new InMemoryTaskRepository())
+            .categoryRepository(new InMemoryCategoryRepository())
             .securityFacade(securityFacade)
             .build();
   }
