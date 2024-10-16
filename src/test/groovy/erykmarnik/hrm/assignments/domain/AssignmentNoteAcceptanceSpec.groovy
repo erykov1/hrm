@@ -5,6 +5,8 @@ import erykmarnik.hrm.assignments.dto.AssignmentNoteDto
 import erykmarnik.hrm.assignments.dto.AssignmentNoteModifyDto
 import erykmarnik.hrm.assignments.dto.CreateAssignmentDto
 import erykmarnik.hrm.assignments.dto.CreateAssignmentNoteDto
+import erykmarnik.hrm.task.dto.CategoryDto
+import erykmarnik.hrm.task.dto.CreateCategoryDto
 import erykmarnik.hrm.task.dto.TaskDto
 import erykmarnik.hrm.user.dto.UserContext
 import erykmarnik.hrm.user.dto.UserDto
@@ -16,6 +18,7 @@ class AssignmentNoteAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
   private TaskDto onboarding
   private AssignmentDto assignment
   private AssignmentNoteDto assignmentNote
+  private CategoryDto newEmployee
 
   def setup() {
     timeApiFacade.useFixedClock(NOW)
@@ -24,20 +27,23 @@ class AssignmentNoteAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
       jane = userApiFacade.createAdmin(createNewUser(username: "jane123", name: "Jane", surname: "Doe", email: "jane@mail.com"))
     and: "there is employee $mike"
       mike = userApiFacade.createEmployee(createNewUser(username: "mike123", name: "Mike", surname: "Smith", email: "mike@mail.com"))
-    and: "there is task $onboarding"
+    and: "there is category $newEmployee"
+      newEmployee = createCategoryRequest(new CreateCategoryDto(CATEGORY_NAME), jane.userId)
+    and: "there is task $onboarding assigned to category $newEmployee"
       ContextHolder.setUserContext(new UserContext(jane.userId))
-      onboarding = taskApiFacade.createTask(createNewTask(createdAt: NOW))
+      onboarding = createTaskRequest(jane.userId, createNewTask(createdAt: NOW, categoryId: newEmployee.categoryId))
     and: "user $mike is assigned to task $onboarding"
       assignment = createAssignment(jane.userId, new CreateAssignmentDto(mike.userId, onboarding.taskId))
   }
 
   def cleanup() {
     deleteAssignmentNote(assignment.assignmentId, assignmentNote, mike.userId)
-    deleteAssignment(assignment, jane.userId)
+    deleteAssignment(assignment.assignmentId, jane.userId)
     userApiFacade.deleteUser(jane.userId)
     userApiFacade.deleteUser(mike.userId)
     taskApiFacade.deleteTask(onboarding.taskId)
     timeApiFacade.useSystemClock()
+    deleteCategory(newEmployee.categoryId, jane.userId)
     ContextHolder.clear()
   }
 

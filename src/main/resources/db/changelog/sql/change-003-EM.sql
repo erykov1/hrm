@@ -1,7 +1,7 @@
 CREATE TABLE assignment (
     assignment_id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    object_id BIGINT NOT NULL,
+    object_id UUID NOT NULL,
     assigned_at TIMESTAMP WITH TIME ZONE,
     done_at TIMESTAMP WITH TIME ZONE,
     assignment_created_by BIGINT NOT NULL,

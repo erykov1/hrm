@@ -1,76 +1,66 @@
 package erykmarnik.hrm.task.domain
 
-import erykmarnik.hrm.integration.IntegrationSpec
+import erykmarnik.hrm.task.dto.CreateCategoryDto
 import erykmarnik.hrm.task.dto.ModifyTaskDto
 import erykmarnik.hrm.task.dto.TaskDto
-import erykmarnik.hrm.task.sample.TaskSample
-import erykmarnik.hrm.user.domain.UserApiFacade
 import erykmarnik.hrm.user.dto.UserContext
 import erykmarnik.hrm.user.dto.UserDto
-import erykmarnik.hrm.user.sample.UserSample
 import erykmarnik.hrm.utils.ContextHolder
-import erykmarnik.hrm.utils.TimeApiFacade
-import erykmarnik.hrm.utils.sample.TimeSample
 
-class TaskAcceptanceSpec extends IntegrationSpec implements TaskSample, TimeSample, UserSample {
-  private TaskApiFacade taskApiFacade
-  private UserApiFacade userApiFacade
-  private TimeApiFacade timeApiFacade
+class TaskAcceptanceSpec extends CategoryAcceptanceBaseSpec {
   private UserDto jane
   private TaskDto task
+  private long onboardingCategory
 
   def setup() {
-    taskApiFacade = new TaskApiFacade(mockMvc, objectMapper)
-    timeApiFacade = new TimeApiFacade(mockMvc, objectMapper)
-    userApiFacade = new UserApiFacade(mockMvc, objectMapper)
     timeApiFacade.useFixedClock(NOW)
+
     given: "there is admin $jane"
       jane = userApiFacade.createAdmin(createNewUser(username: "jane123", name: "Jane", surname: "Doe"))
       ContextHolder.setUserContext(new UserContext(jane.userId))
+    and: "there is category $onboardingCategory"
+      onboardingCategory = createCategoryRequest(jane.userId, new CreateCategoryDto(ONBOARDING)).categoryId
   }
 
   def cleanup() {
     timeApiFacade.useSystemClock()
-    if (task != null) {
-      taskApiFacade.deleteTask(task.getTaskId())
-    }
     userApiFacade.deleteUser(jane.getUserId())
+    deleteTask(jane.userId, task.taskId)
+    categoryApiFacade.deleteCategory(onboardingCategory)
     ContextHolder.clear()
   }
 
   def "Should create new task"() {
     when: "admin $jane creates new task"
-      task = taskApiFacade.createTask(createNewTask(createdAt: NOW))
+      task = createTaskRequest(jane.userId, createNewTask(createdAt: NOW, categoryId: onboardingCategory))
     then: "task is created"
-      task == createTask(taskId: task.getTaskId(), createdAt: NOW, createdBy: jane.userId)
+      task == createTask(taskId: task.getTaskId(), createdAt: NOW, createdBy: jane.userId, categoryId: onboardingCategory)
   }
 
   def "Should get task by task id"() {
     given: "admin $jane creates new task"
-      Long taskId = taskApiFacade.createTask(createNewTask(createdAt: NOW)).taskId
+      UUID taskId = createTaskRequest(jane.userId, createNewTask(createdAt: NOW, categoryId: onboardingCategory)).taskId
     when: "asks for $task by his id"
-      task = taskApiFacade.getTaskById(taskId)
+      task = getTaskById(jane.userId, taskId)
     then: "task is created"
-      task == createTask(taskId: task.getTaskId(), createdAt: NOW, createdBy: jane.userId)
+      task == createTask(taskId: task.getTaskId(), createdAt: NOW, createdBy: jane.userId, categoryId: onboardingCategory)
   }
 
   def "Should delete task"() {
     given: "admin $jane creates new task with assigned user $EMPLOYEE_JOHN"
-      task = taskApiFacade.createTask(createNewTask(createdAt: NOW))
+      task = createTaskRequest(jane.userId, createNewTask(createdAt: NOW, categoryId: onboardingCategory))
     when: "admin $jane deletes task"
-      taskApiFacade.deleteTask(task.getTaskId())
+      task = deleteTask(jane.userId, task.taskId)
     then: "task is deleted"
-      taskApiFacade.getAll() == []
+      getAll(jane.userId) == []
   }
 
   def "Should modify task"() {
     given: "admin $jane creates new task with assigned user $EMPLOYEE_JOHN"
-      Long taskId = taskApiFacade.createTask(createNewTask(createdAt: NOW)).getTaskId()
+      UUID taskId = createTaskRequest(jane.userId, createNewTask(createdAt: NOW, categoryId: onboardingCategory)).getTaskId()
     when: "modifies task by changing assigned user and task name"
-      ContextHolder.setUserContext(new UserContext(jane.userId))
-      task = taskApiFacade.modifyTask(taskId, ModifyTaskDto.builder().taskName(ONBOARDING_TASK).build())
+      task = modifyTask(jane.userId, taskId, ModifyTaskDto.builder().taskName(ONBOARDING_TASK).build())
     then: "task is modified"
-      task == createTask(taskId: task.getTaskId(), createdAt: NOW, createdBy: jane.userId, taskName: ONBOARDING_TASK)
+      task == createTask(taskId: task.getTaskId(), createdAt: NOW, createdBy: jane.userId, taskName: ONBOARDING_TASK, categoryId: onboardingCategory)
   }
-
 }

@@ -2,6 +2,7 @@ package erykmarnik.hrm.task.domain
 
 import erykmarnik.hrm.task.dto.CategoryDto
 import erykmarnik.hrm.task.dto.CreateCategoryDto
+import erykmarnik.hrm.task.dto.NewCategoryNameDto
 import erykmarnik.hrm.task.dto.TaskDto
 import erykmarnik.hrm.task.exception.AlreadyTakenException
 import erykmarnik.hrm.task.exception.ForbiddenCategoryOperationException
@@ -34,9 +35,9 @@ class CategorySpec extends TaskBaseSpec {
     given: "there is category"
       CategoryDto category = taskFacade.createCategory(new CreateCategoryDto(CATEGORY_NAME))
     when: "admin $ADMIN_JANE modifies category name"
-      taskFacade.modifyCategory(category.categoryId, "News")
+      taskFacade.modifyCategory(category.categoryId, new NewCategoryNameDto(NEWS))
     then: "category name is changed"
-      taskFacade.getCategory(category.categoryId) == createCategory(categoryId: category.categoryId, categoryName: "News",
+      taskFacade.getCategory(category.categoryId) == createCategory(categoryId: category.categoryId, categoryName: NEWS,
               createdBy: ADMIN_JANE, createdAt: NOW)
   }
 
@@ -46,7 +47,7 @@ class CategorySpec extends TaskBaseSpec {
     and: "there is another category"
       CategoryDto news = taskFacade.createCategory(new CreateCategoryDto(NEWS))
     when: "admin $ADMIN_JANE modifies category 'news' name"
-      taskFacade.modifyCategory(news.categoryId, CATEGORY_NAME)
+      taskFacade.modifyCategory(news.categoryId, new NewCategoryNameDto(CATEGORY_NAME))
     then: "category name is not changed"
       thrown(AlreadyTakenException)
   }

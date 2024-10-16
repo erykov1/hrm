@@ -8,7 +8,7 @@ import java.time.Instant
 trait AssignmentSample {
   static final long ASSIGNMENT_ID = 191L
   static final long ASSIGNEE = 11L
-  static final long OBJECT_ID = 111L
+  static final UUID OBJECT_ID = UUID.fromString("bb2f96af-839d-46c7-a558-b0ec5d7069ac")
   static final long CREATED_BY = 113L
 
   private Map<String, Object> DEFAULT_ASSIGNMENT_DATA = [
@@ -26,7 +26,7 @@ trait AssignmentSample {
     AssignmentDto.builder()
       .assignmentId(changesWithDefaults.assignmentId as Long)
       .userId(changesWithDefaults.userId as Long)
-      .objectId(changesWithDefaults.objectId as Long)
+      .objectId(changesWithDefaults.objectId as UUID)
       .assignedAt(changesWithDefaults.assignedAt as Instant)
       .doneAt(changesWithDefaults.doneAt as Instant)
       .assignmentCreatedBy(changesWithDefaults.assignmentCreatedBy as Long)

@@ -31,7 +31,7 @@ class TaskApiFacade extends HrmApi {
     value
   }
 
-  TaskDto modifyTask(Long taskId, ModifyTaskDto modifyTask) {
+  TaskDto modifyTask(UUID taskId, ModifyTaskDto modifyTask) {
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.put("/api/task/{taskId}/modify", taskId)
             .contentType(MediaType.APPLICATION_JSON)
             .content(mapper.writeValueAsString(modifyTask))
@@ -41,7 +41,7 @@ class TaskApiFacade extends HrmApi {
     value
   }
 
-  void deleteTask(Long taskId) {
+  void deleteTask(UUID taskId) {
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.delete("/api/task/{taskId}/delete", taskId))
     checkResponse(perform.andReturn().response)
   }
@@ -53,7 +53,7 @@ class TaskApiFacade extends HrmApi {
     value
   }
 
-  TaskDto getTaskById(Long taskId) {
+  TaskDto getTaskById(UUID taskId) {
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/task/{taskId}", taskId)
             .contentType(MediaType.APPLICATION_JSON)
     )

@@ -1,11 +1,11 @@
 package erykmarnik.hrm.assignments.domain
 
 import erykmarnik.hrm.assignments.dto.AssignmentAnalyticDto
-import erykmarnik.hrm.assignments.dto.AssignmentDto
 import erykmarnik.hrm.assignments.dto.AssignmentStatusDto
 import erykmarnik.hrm.assignments.dto.CreateAssignmentDto
+import erykmarnik.hrm.task.dto.CategoryDto
+import erykmarnik.hrm.task.dto.CreateCategoryDto
 import erykmarnik.hrm.task.dto.TaskDto
-import erykmarnik.hrm.user.dto.UserContext
 import erykmarnik.hrm.user.dto.UserDto
 import erykmarnik.hrm.utils.ContextHolder
 
@@ -14,8 +14,9 @@ class AssignmentAnalyticAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
   private UserDto mike
   private UserDto john
   private TaskDto onboarding
-  private AssignmentDto assignment
-  private AssignmentDto johnAssignment
+  private CategoryDto newEmployee
+  private long assignmentId
+  private long johnAssignmentId
 
   def setup() {
     timeApiFacade.useFixedClock(NOW)
@@ -26,20 +27,22 @@ class AssignmentAnalyticAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
       mike = userApiFacade.createEmployee(createNewUser(username: "mike123", name: "Mike", surname: "Smith", email: "mike@mail.com"))
     and: "there is employee $john"
       john = userApiFacade.createEmployee(createNewUser(username: "john123", name: "John", surname: "Butcher", email: "john@mail.com"))
-    and: "there is task $onboarding"
-      ContextHolder.setUserContext(new UserContext(jane.userId))
-      onboarding = taskApiFacade.createTask(createNewTask(createdAt: NOW))
+    and: "there is category $newEmployee"
+      newEmployee = createCategoryRequest(new CreateCategoryDto(CATEGORY_NAME), jane.userId)
+    and: "there is task $onboarding assigned to category $newEmployee"
+      onboarding = createTaskRequest(jane.userId, createNewTask(createdAt: NOW, categoryId: newEmployee.categoryId))
     and: "admin $jane assinges user $mike to task $onboarding"
-      assignment = createAssignment(jane.userId, new CreateAssignmentDto(mike.userId, onboarding.taskId))
+      assignmentId = createAssignment(jane.userId, new CreateAssignmentDto(mike.userId, onboarding.taskId)).assignmentId
   }
 
   def cleanup() {
-    deleteAssignment(assignment, jane.userId)
-    deleteAssignment(johnAssignment, jane.userId)
+    deleteAssignment(assignmentId, jane.userId)
+    deleteAssignment(johnAssignmentId, jane.userId)
     userApiFacade.deleteUser(jane.userId)
     userApiFacade.deleteUser(mike.userId)
     userApiFacade.deleteUser(john.userId)
-    taskApiFacade.deleteTask(onboarding.taskId)
+    deleteTask(onboarding.taskId, jane.userId)
+    deleteCategory(newEmployee.categoryId, jane.userId)
     timeApiFacade.useSystemClock()
     ContextHolder.clear()
   }
@@ -53,7 +56,7 @@ class AssignmentAnalyticAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
               assignmentStatus: AssignmentStatusDto.NOT_STARTED)]
     when: "user $mike set task $onboarding to done $WEEK_LATER"
       timeApiFacade.useFixedClock(WEEK_LATER)
-      setToDone(assignment.assignmentId, mike.userId)
+      setToDone(assignmentId, mike.userId)
     then: "result for analytic data is changed"
       assignmentApiFacade.getAllForUser(mike.userId) == [createAssignmentAnalytic(userId: mike.userId, username: mike.username, name: mike.name, surname: mike.surname,
               objectName: onboarding.taskName, minutesTakenToDone: MINUTES_FOR_WEEK_LATER, startedAt: Date.from(NOW), endedAt: Date.from(WEEK_LATER),
@@ -63,7 +66,7 @@ class AssignmentAnalyticAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
   def "Should get analytic data for all not started assignments"() {
     given: "admin $jane assignes user $john to task $onboarding $WEEK_LATER"
       timeApiFacade.useFixedClock(WEEK_LATER)
-      johnAssignment = createAssignment(jane.userId, new CreateAssignmentDto(john.userId, onboarding.taskId))
+      johnAssignmentId = createAssignment(jane.userId, new CreateAssignmentDto(john.userId, onboarding.taskId)).assignmentId
     when: "admin $jane asks for analytic data for all not started assignments"
       List<AssignmentAnalyticDto> result = assignmentApiFacade.getAllNotStartedAssignments()
     then: "gets all analytic data for all not started assignments"
@@ -78,9 +81,9 @@ class AssignmentAnalyticAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
   def "Should get analytic data for all done assignments"() {
     given: "admin $jane assignes user $john to task $onboarding $WEEK_LATER"
       timeApiFacade.useFixedClock(WEEK_LATER)
-      johnAssignment = createAssignment(jane.userId, new CreateAssignmentDto(john.userId, onboarding.taskId))
+      johnAssignmentId = createAssignment(jane.userId, new CreateAssignmentDto(john.userId, onboarding.taskId)).assignmentId
     and: "user $mike set task $onboarding to done"
-      setToDone(assignment.assignmentId, mike.userId)
+      setToDone(assignmentId, mike.userId)
     when: "admin $jane asks for analytic data for all done assignments"
       List<AssignmentAnalyticDto> result = assignmentApiFacade.getAllDoneAssignments()
     then: "gets all analytic data for all done assignments"

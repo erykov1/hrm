@@ -63,11 +63,11 @@ public class TaskFacade {
     return categoryRepository.findAllTasks().stream().map(Task::dto).collect(Collectors.toList());
   }
 
-  public CategoryDto modifyCategory(Long categoryId, String newName) {
+  public CategoryDto modifyCategory(Long categoryId, NewCategoryNameDto newName) {
     Category category = findCategoryById(categoryId);
-    validateCategory(newName);
+    validateCategory(newName.getNewCategoryName());
     log.info("changing category name from: " + category.categoryDto().getCategoryName() + " to: " + newName);
-    return categoryRepository.save(category.changeName(newName)).categoryDto();
+    return categoryRepository.save(category.changeName(newName.getNewCategoryName())).categoryDto();
   }
 
   public CategoryDto getCategory(Long categoryId) {

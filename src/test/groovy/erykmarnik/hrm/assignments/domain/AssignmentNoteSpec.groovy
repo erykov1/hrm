@@ -11,10 +11,12 @@ import erykmarnik.hrm.assignments.sample.AssignmentSample
 import erykmarnik.hrm.utils.ContextSpec
 import erykmarnik.hrm.utils.InstantProvider
 import erykmarnik.hrm.utils.sample.TimeSample
+import org.springframework.context.ApplicationEventPublisher
 
 class AssignmentNoteSpec extends ContextSpec implements TimeSample, AssignmentSample, AssignmentNoteSample {
   private InstantProvider instantProvider = new InstantProvider()
-  private AssignmentFacade assignmentFacade = new AssignmentConfiguration().assignmentFacade(instantProvider, securityFacade, Stub(AssignmentAnalytic.class))
+  private ApplicationEventPublisher eventPublisher = Mock(ApplicationEventPublisher)
+  private AssignmentFacade assignmentFacade = new AssignmentConfiguration().assignmentFacade(instantProvider, securityFacade, Stub(AssignmentAnalytic.class), eventPublisher)
   private AssignmentDto assignment
 
   def setup() {

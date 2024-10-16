@@ -10,7 +10,7 @@ import java.util.UUID;
 
 interface CategoryRepository extends JpaRepository<Category, Long> {
   Optional<Category> findByCategoryId(Long categoryId);
-  @Query("SELECT t FROM Task t WHERE t.taskId := taskId")
+  @Query("SELECT t FROM Task t WHERE t.taskId = :taskId")
   Optional<Task> findTaskById(@Param("taskId") UUID taskId);
   @Query("SELECT t FROM Task t")
   List<Task> findAllTasks();
