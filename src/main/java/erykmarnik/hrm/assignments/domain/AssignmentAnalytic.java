@@ -2,6 +2,7 @@ package erykmarnik.hrm.assignments.domain;
 
 import erykmarnik.hrm.assignments.dto.AssignmentAnalyticDto;
 import erykmarnik.hrm.task.domain.TaskFacade;
+import erykmarnik.hrm.task.dto.AssignedTaskDto;
 import erykmarnik.hrm.user.domain.UserFacade;
 import erykmarnik.hrm.user.dto.UserDto;
 import lombok.AccessLevel;
@@ -25,17 +26,18 @@ class AssignmentAnalytic {
     List<Assignment> assignments = assignmentRepository.findAllNotStarted();
     return assignments.stream().map(assignment -> {
       UserDto user = userFacade.getByUserId(assignment.dto().getUserId());
-      String taskName = taskFacade.findByTaskId(assignment.dto().getObjectId()).getTaskName();
+      AssignedTaskDto assignedTask = taskFacade.getAssignedTask(assignment.dto().getObjectId());
       return AssignmentAnalyticDto.builder()
               .userId(user.getUserId())
               .username(user.getUsername())
               .name(user.getName())
               .surname(user.getSurname())
-              .objectName(taskName)
+              .objectName(assignedTask.getTaskName())
               .minutesTakenToDone(EMPTY_MINUTES)
               .startedAt(Date.from(assignment.dto().getAssignedAt()))
               .endedAt(dateFrom(assignment.dto().getDoneAt()))
               .assignmentStatus(assignment.dto().getAssignmentStatus())
+              .category(assignedTask.getCategoryName())
               .build();
     }).toList();
   }
@@ -44,17 +46,18 @@ class AssignmentAnalytic {
     List<Assignment> assignments = assignmentRepository.findAllDone();
     return assignments.stream().map(assignment -> {
       UserDto user = userFacade.getByUserId(assignment.dto().getUserId());
-      String taskName = taskFacade.findByTaskId(assignment.dto().getObjectId()).getTaskName();
+      AssignedTaskDto assignedTask = taskFacade.getAssignedTask(assignment.dto().getObjectId());
       return AssignmentAnalyticDto.builder()
               .userId(user.getUserId())
               .username(user.getUsername())
               .name(user.getName())
               .surname(user.getSurname())
-              .objectName(taskName)
+              .objectName(assignedTask.getTaskName())
               .minutesTakenToDone(getMinutesTakenToDoneTask(assignment))
               .startedAt(Date.from(assignment.dto().getAssignedAt()))
               .endedAt(Date.from(assignment.dto().getDoneAt()))
               .assignmentStatus(assignment.dto().getAssignmentStatus())
+              .category(assignedTask.getCategoryName())
               .build();
     }).toList();
   }
@@ -63,17 +66,18 @@ class AssignmentAnalytic {
     List<Assignment> assignments = assignmentRepository.findUserAssignments(userId);
     UserDto user = userFacade.getByUserId(userId);
     return assignments.stream().map(assignment -> {
-      String taskName = taskFacade.findByTaskId(assignment.dto().getObjectId()).getTaskName();
+      AssignedTaskDto assignedTask = taskFacade.getAssignedTask(assignment.dto().getObjectId());
       return AssignmentAnalyticDto.builder()
               .userId(user.getUserId())
               .username(user.getUsername())
               .name(user.getName())
               .surname(user.getSurname())
-              .objectName(taskName)
+              .objectName(assignedTask.getTaskName())
               .minutesTakenToDone(getMinutesTakenToDoneTask(assignment))
               .startedAt(Date.from(assignment.dto().getAssignedAt()))
               .endedAt(dateFrom(assignment.dto().getDoneAt()))
               .assignmentStatus(assignment.dto().getAssignmentStatus())
+              .category(assignedTask.getCategoryName())
               .build();
     }).toList();
   }
@@ -95,10 +99,6 @@ class AssignmentAnalytic {
   }
 
   private Date dateFrom(Instant instant) {
-    if (instant == null) {
-      return null;
-    } else {
-      return Date.from(instant);
-    }
+    return instant == null ? null : Date.from(instant);
   }
 }

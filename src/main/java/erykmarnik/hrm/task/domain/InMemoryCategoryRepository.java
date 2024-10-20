@@ -1,5 +1,7 @@
 package erykmarnik.hrm.task.domain;
 
+import erykmarnik.hrm.task.dto.AssignedTaskDto;
+import erykmarnik.hrm.task.dto.TaskDto;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Example;
@@ -38,6 +40,15 @@ class InMemoryCategoryRepository implements CategoryRepository {
       tasks.addAll(category.getTasks());
     }
     return tasks;
+  }
+
+  @Override
+  public Optional<AssignedTaskDto> findAssignedTaskById(UUID taskId) {
+    List<Task> tasks = findAllTasks();
+    return tasks.stream()
+            .filter(task -> task.dto().getTaskId().equals(taskId))
+            .map(assignedTask -> new AssignedTaskDto(assignedTask.dto().getTaskName(), findByCategoryId(assignedTask.dto().getCategoryId()).get().categoryDto().getCategoryName()))
+            .findFirst();
   }
 
   @Override

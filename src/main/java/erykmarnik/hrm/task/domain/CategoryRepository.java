@@ -1,5 +1,6 @@
 package erykmarnik.hrm.task.domain;
 
+import erykmarnik.hrm.task.dto.AssignedTaskDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,4 +15,9 @@ interface CategoryRepository extends JpaRepository<Category, Long> {
   Optional<Task> findTaskById(@Param("taskId") UUID taskId);
   @Query("SELECT t FROM Task t")
   List<Task> findAllTasks();
+  @Query("SELECT new erykmarnik.hrm.task.dto.AssignedTaskDto(t.taskName, c.categoryName) " +
+          "FROM Task t " +
+          "JOIN t.category c " +
+          "WHERE t.taskId = :taskId")
+  Optional<AssignedTaskDto> findAssignedTaskById(@Param("taskId") UUID taskId);
 }

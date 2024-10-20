@@ -15,6 +15,7 @@ trait AssignmentAnalyticSample {
   private static final Long MINUTES_TAKEN_TO_DONE = 1L
   static final Long EMPTY_MINUTES = 0L
   static final Long MINUTES_FOR_WEEK_LATER = 10080L
+  static final String CATEGORY_NAME = "new employee"
 
   private Map<String, Object> DEFAULT_ASSIGNMENT_ANALYTIC_DATA = [
           userId: USER_ID,
@@ -25,7 +26,8 @@ trait AssignmentAnalyticSample {
           minutesTakenToDoneTask: MINUTES_TAKEN_TO_DONE,
           startedAt: Date.from(Instant.now()),
           endedAt: Date.from(Instant.now()),
-          assignmentStatus: AssignmentStatusDto.DONE
+          assignmentStatus: AssignmentStatusDto.DONE,
+          category: CATEGORY_NAME
   ] as Map<String, Object>
 
   AssignmentAnalyticDto createAssignmentAnalytic(Map<String, Object> changes = [:]) {
@@ -40,6 +42,7 @@ trait AssignmentAnalyticSample {
             .startedAt(changesWithDefaults.startedAt as Date)
             .endedAt(changesWithDefaults.endedAt as Date)
             .assignmentStatus(changesWithDefaults.assignmentStatus as AssignmentStatusDto)
+            .category(changesWithDefaults.category as String)
             .build()
   }
 
@@ -56,5 +59,6 @@ trait AssignmentAnalyticSample {
     assert result.startedAt == expected.startedAt
     assert result.endedAt == expected.endedAt
     assert result.assignmentStatus == expected.assignmentStatus
+    assert result.category == expected.category
   }
 }

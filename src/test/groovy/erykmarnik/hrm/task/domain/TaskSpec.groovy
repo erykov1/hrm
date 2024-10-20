@@ -1,5 +1,6 @@
 package erykmarnik.hrm.task.domain
 
+import erykmarnik.hrm.task.dto.AssignedTaskDto
 import erykmarnik.hrm.task.dto.CreateCategoryDto
 import erykmarnik.hrm.task.dto.ModifyTaskDto
 import erykmarnik.hrm.task.dto.TaskDto
@@ -62,5 +63,21 @@ class TaskSpec extends TaskBaseSpec {
       taskFacade.modifyTask(taskId, ModifyTaskDto.builder().taskName(ONBOARDING_TASK).build())
     then: "task is not modified by user $EMPLOYEE_MIKE"
       thrown(ForbiddenTaskOperationException)
+  }
+
+  def "Should return task name with category by task id"() {
+    given: "task for user $EMPLOYEE_JOHN is created"
+      UUID taskId = taskFacade.createTask(createNewTask(createdAt: NOW, categoryId: newEmployeeCategory)).taskId
+    when: "asks for task name with category name"
+      AssignedTaskDto assignedTask = taskFacade.getAssignedTask(taskId)
+    then: "gets task name with category name"
+      assignedTask == new AssignedTaskDto(TASK_NAME, CATEGORY_NAME)
+  }
+
+  def "Should not return task name with category by task id"() {
+    when: "asks for not existing task name with category name"
+      taskFacade.getAssignedTask(TASK_ID)
+    then: "gets task name with category name"
+      thrown(TaskNotFoundException)
   }
 }

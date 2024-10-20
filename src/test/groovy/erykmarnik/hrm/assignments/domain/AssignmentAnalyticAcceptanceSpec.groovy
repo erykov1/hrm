@@ -53,14 +53,14 @@ class AssignmentAnalyticAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
     then: "gets all analytic data for all assignments for user $mike"
       result == [createAssignmentAnalytic(userId: mike.userId, username: mike.username, name: mike.name, surname: mike.surname,
               objectName: onboarding.taskName, minutesTakenToDone: EMPTY_MINUTES, startedAt: Date.from(NOW), endedAt: null,
-              assignmentStatus: AssignmentStatusDto.NOT_STARTED)]
+              assignmentStatus: AssignmentStatusDto.NOT_STARTED, category: newEmployee.categoryName)]
     when: "user $mike set task $onboarding to done $WEEK_LATER"
       timeApiFacade.useFixedClock(WEEK_LATER)
       setToDone(assignmentId, mike.userId)
     then: "result for analytic data is changed"
       assignmentApiFacade.getAllForUser(mike.userId) == [createAssignmentAnalytic(userId: mike.userId, username: mike.username, name: mike.name, surname: mike.surname,
               objectName: onboarding.taskName, minutesTakenToDone: MINUTES_FOR_WEEK_LATER, startedAt: Date.from(NOW), endedAt: Date.from(WEEK_LATER),
-              assignmentStatus: AssignmentStatusDto.DONE)]
+              assignmentStatus: AssignmentStatusDto.DONE, category: newEmployee.categoryName)]
   }
 
   def "Should get analytic data for all not started assignments"() {
@@ -75,7 +75,7 @@ class AssignmentAnalyticAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
               assignmentStatus: AssignmentStatusDto.NOT_STARTED), createAssignmentAnalytic(userId: john.userId, username: john.username,
               name: john.name, surname: john.surname,
               objectName: onboarding.taskName, minutesTakenToDone: EMPTY_MINUTES, startedAt: Date.from(WEEK_LATER), endedAt: null,
-              assignmentStatus: AssignmentStatusDto.NOT_STARTED)])
+              assignmentStatus: AssignmentStatusDto.NOT_STARTED, category: newEmployee.categoryName)])
   }
 
   def "Should get analytic data for all done assignments"() {
@@ -89,6 +89,6 @@ class AssignmentAnalyticAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
     then: "gets all analytic data for all done assignments"
       result == [createAssignmentAnalytic(userId: mike.userId, username: mike.username, name: mike.name, surname: mike.surname,
               objectName: onboarding.taskName, minutesTakenToDone: MINUTES_FOR_WEEK_LATER, startedAt: Date.from(NOW), endedAt: Date.from(WEEK_LATER),
-              assignmentStatus: AssignmentStatusDto.DONE)]
+              assignmentStatus: AssignmentStatusDto.DONE, category: newEmployee.categoryName)]
   }
 }

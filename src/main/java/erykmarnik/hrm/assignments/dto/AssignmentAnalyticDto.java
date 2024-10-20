@@ -19,4 +19,5 @@ public class AssignmentAnalyticDto {
   Date startedAt;
   Date endedAt;
   AssignmentStatusDto assignmentStatus;
+  String category;
 }
