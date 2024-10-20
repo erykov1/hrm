@@ -36,7 +36,7 @@
 ## current architecture
 ![structurizr-90179-context diagram](https://github.com/user-attachments/assets/732621d6-301e-4d7f-9ee4-9403a427b7e4)
 
-![structurizr-90179-components (3)](https://github.com/user-attachments/assets/69b19e22-af40-4621-9382-ac5756b2ea5b)
+![structurizr-90179-components (4)](https://github.com/user-attachments/assets/76ecfd97-aca2-4df5-8c84-b660a0939555)
 
 ## release 0.0.3
   - admin creates/deletes/modifies task,
