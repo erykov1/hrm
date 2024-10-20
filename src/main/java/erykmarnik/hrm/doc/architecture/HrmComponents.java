@@ -24,6 +24,7 @@ class HrmComponents {
   Component assignmentController;
   Component assignmentFacade;
   Component categoryController;
+  Component notificationFacade;
 
   HrmComponents(Container hrm) {
     userController = hrm.addComponent("user controller");
@@ -34,7 +35,8 @@ class HrmComponents {
     assignmentFacade = hrm.addComponent("assignment facade");
     taskController = hrm.addComponent("task controller");
     taskFacade = hrm.addComponent("task facade");
-    this.categoryController = hrm.addComponent("category controller");
+    categoryController = hrm.addComponent("category controller");
+    notificationFacade = hrm.addComponent("notification facade");
   }
 
   void createUsages(External external) {
@@ -76,6 +78,7 @@ class HrmComponents {
       assignmentFacade.uses(securityFacade, "asks to validate user operations on notes");
       external.getAdmin().uses(categoryController, "makes api call to create/get/modify/delete category");
       categoryController.uses(taskFacade, "creates/modifies/gets/deletes category");
+      notificationFacade.delivers(external.getEmployee(), "sends notification when user is assigned/removed or assignation status is changed");
     }
   }
 
@@ -98,5 +101,6 @@ class HrmComponents {
     contextView.add(hrmComponents.getAssignmentController());
     contextView.add(hrmComponents.getAssignmentFacade());
     contextView.add(hrmComponents.getCategoryController());
+    contextView.add(hrmComponents.getNotificationFacade());
   }
 }
