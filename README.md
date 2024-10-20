@@ -38,6 +38,12 @@
 
 ![structurizr-90179-components (4)](https://github.com/user-attachments/assets/76ecfd97-aca2-4df5-8c84-b660a0939555)
 
+## release 0.0.4
+  - admin creates/deletes/modifies category,
+  - admin assigned task to category,
+  - extended assignments analytic with category name,
+  - notification for assigned user (status changed, removed, added) through email
+
 ## release 0.0.3
   - admin creates/deletes/modifies task,
   - employee gets task,
