@@ -9,7 +9,6 @@ import com.structurizr.view.ViewSet;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
-
 import java.util.function.Function;
 
 @Getter
@@ -24,6 +23,7 @@ class HrmComponents {
   Component taskController;
   Component assignmentController;
   Component assignmentFacade;
+  Component categoryController;
 
   HrmComponents(Container hrm) {
     userController = hrm.addComponent("user controller");
@@ -34,6 +34,7 @@ class HrmComponents {
     assignmentFacade = hrm.addComponent("assignment facade");
     taskController = hrm.addComponent("task controller");
     taskFacade = hrm.addComponent("task facade");
+    this.categoryController = hrm.addComponent("category controller");
   }
 
   void createUsages(External external) {
@@ -62,7 +63,7 @@ class HrmComponents {
       external.getAdmin().uses(taskController, "makes api call to create/delete/modify task");
       external.getEmployee().uses(taskController, "makes api call to get task");
       taskController.uses(taskFacade, "asks to create/modify/get tasks");
-      taskFacade.uses(external.getDatabase(), "inserts new tasks, modify, get tasks");
+      taskFacade.uses(external.getDatabase(), "inserts new tasks/category, modify, get tasks/category");
       external.getAdmin().uses(assignmentController, "makes api call to create/delete assignments, get analytic data for assignments");
       external.getEmployee().uses(assignmentController, "makes api call to set to done assignments");
       assignmentController.uses(assignmentFacade, "asks to delete/create/set to done assignment, gets info about analytic data for assignments");
@@ -70,6 +71,11 @@ class HrmComponents {
       assignmentFacade.uses(userFacade, "gets user info for analytic data");
       assignmentFacade.uses(taskFacade, "gets task info for analytic data");
       external.getEmployee().uses(assignmentController, "makes api call to set to done assignments, gets assignments info");
+      external.getEmployee().uses(assignmentController, "makes api call to add/get/delete/modifies note to assigned object");
+      assignmentController.uses(assignmentFacade, "asks to add/get/delete/modifies note to user assigned object");
+      assignmentFacade.uses(securityFacade, "asks to validate user operations on notes");
+      external.getAdmin().uses(categoryController, "makes api call to create/get/modify/delete category");
+      categoryController.uses(taskFacade, "creates/modifies/gets/deletes category");
     }
   }
 
@@ -91,5 +97,6 @@ class HrmComponents {
     contextView.add(hrmComponents.getTaskFacade());
     contextView.add(hrmComponents.getAssignmentController());
     contextView.add(hrmComponents.getAssignmentFacade());
+    contextView.add(hrmComponents.getCategoryController());
   }
 }
