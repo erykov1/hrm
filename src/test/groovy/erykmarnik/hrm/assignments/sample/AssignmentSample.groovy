@@ -2,6 +2,8 @@ package erykmarnik.hrm.assignments.sample
 
 import erykmarnik.hrm.assignments.dto.AssignmentDto
 import erykmarnik.hrm.assignments.dto.AssignmentStatusDto
+import erykmarnik.hrm.assignments.dto.CreateAssignmentDto
+import erykmarnik.hrm.assignments.dto.CreateAssignmentNoteDto
 
 import java.time.Instant
 
@@ -18,7 +20,8 @@ trait AssignmentSample {
           assignedAt: Instant.now(),
           doneAt: Instant.now(),
           assignmentCreatedBy: CREATED_BY,
-          assignmentStatus: AssignmentStatusDto.DONE
+          assignmentStatus: AssignmentStatusDto.DONE,
+          dueTo: Instant.now()
   ] as Map<String, Object>
 
   AssignmentDto createAssignment(Map<String, Object> changes = [:]) {
@@ -31,6 +34,16 @@ trait AssignmentSample {
       .doneAt(changesWithDefaults.doneAt as Instant)
       .assignmentCreatedBy(changesWithDefaults.assignmentCreatedBy as Long)
       .assignmentStatus(changesWithDefaults.assignmentStatus as AssignmentStatusDto)
+      .dueTo(changesWithDefaults.dueTo as Instant)
+      .build()
+  }
+
+  CreateAssignmentDto createNewAssignment(Map<String, Object> changes = [:]) {
+    def changesWithDefaults = DEFAULT_ASSIGNMENT_DATA + changes
+    CreateAssignmentDto.builder()
+      .userId(changesWithDefaults.userId as Long)
+      .objectId(changesWithDefaults.objectId as UUID)
+      .dueTo(changesWithDefaults.dueTo as Instant)
       .build()
   }
 }

@@ -2,7 +2,7 @@ package erykmarnik.hrm.assignments.domain
 
 import erykmarnik.hrm.assignments.dto.AssignmentDto
 import erykmarnik.hrm.assignments.dto.AssignmentStatusDto
-import erykmarnik.hrm.assignments.dto.CreateAssignmentDto
+import erykmarnik.hrm.assignments.exception.OverDueAssignmentException
 import erykmarnik.hrm.assignments.sample.AssignmentSample
 import erykmarnik.hrm.task.sample.TaskSample
 import erykmarnik.hrm.utils.ContextSpec
@@ -27,7 +27,7 @@ class AssignmentSpec extends ContextSpec implements TimeSample, AssignmentSample
 
   def "Should create new assignment"() {
     when: "admin $ADMIN_JANE creates assignment for user $EMPLOYEE_MIKE to object $OBJECT_ID"
-      AssignmentDto assignment = assignmentFacade.createAssignment(new CreateAssignmentDto(EMPLOYEE_MIKE, OBJECT_ID))
+      AssignmentDto assignment = assignmentFacade.createAssignment(createNewAssignment(userId: EMPLOYEE_MIKE, objectId: OBJECT_ID))
     then: "assignment is created"
       assignment == createAssignment(assignmentId: assignment.assignmentId, userId: EMPLOYEE_MIKE, objectId: OBJECT_ID, assignedAt: NOW,
         doneAt: null, assignmentCreatedBy: ADMIN_JANE, assignmentStatus: AssignmentStatusDto.NOT_STARTED
@@ -36,16 +36,16 @@ class AssignmentSpec extends ContextSpec implements TimeSample, AssignmentSample
 
   def "Should not create new assignment if user is already assigned to object"() {
     given: "admin $ADMIN_JANE creates assignment for user $EMPLOYEE_MIKE to object $OBJECT_ID"
-      assignmentFacade.createAssignment(new CreateAssignmentDto(EMPLOYEE_MIKE, OBJECT_ID))
+      assignmentFacade.createAssignment(createNewAssignment(userId: EMPLOYEE_MIKE, objectId: OBJECT_ID))
     when: "admin $ADMIN_JANE creates assignment for user $EMPLOYEE_MIKE to object $OBJECT_ID again"
-      assignmentFacade.createAssignment(new CreateAssignmentDto(EMPLOYEE_MIKE, OBJECT_ID))
+      assignmentFacade.createAssignment(createNewAssignment(userId: EMPLOYEE_MIKE, objectId: OBJECT_ID))
     then: "assignment is not created"
       thrown(AlreadyAssignedException)
   }
 
   def "Should set to assignment to done if assigned user done object"() {
     given: "admin $ADMIN_JANE creates assignment for user $EMPLOYEE_MIKE to object $OBJECT_ID"
-      Long assignmentId = assignmentFacade.createAssignment(new CreateAssignmentDto(EMPLOYEE_MIKE, OBJECT_ID)).assignmentId
+      Long assignmentId = assignmentFacade.createAssignment(createNewAssignment(userId: EMPLOYEE_MIKE, objectId: OBJECT_ID)).assignmentId
     and: "user $EMPLOYEE_MIKE logs in $WEEK_LATER"
       loginUser(EMPLOYEE_MIKE)
       instantProvider.useFixedClock(WEEK_LATER)
@@ -60,7 +60,7 @@ class AssignmentSpec extends ContextSpec implements TimeSample, AssignmentSample
 
   def "Should not set to assignment to done if assigned user done object"() {
     given: "admin $ADMIN_JANE creates assignment for user $EMPLOYEE_MIKE to object $OBJECT_ID"
-      Long assignmentId = assignmentFacade.createAssignment(new CreateAssignmentDto(EMPLOYEE_MIKE, OBJECT_ID)).assignmentId
+      Long assignmentId = assignmentFacade.createAssignment(createNewAssignment(userId: EMPLOYEE_MIKE, objectId: OBJECT_ID)).assignmentId
     and: "user $EMPLOYEE_JOHN logs in"
       loginUser(EMPLOYEE_JOHN)
     when: "user $EMPLOYEE_JOHN tries to set to done assignment $assignmentId"
@@ -71,7 +71,7 @@ class AssignmentSpec extends ContextSpec implements TimeSample, AssignmentSample
 
   def "Should delete assignment"() {
     given: "admin $ADMIN_JANE creates assignment for user $EMPLOYEE_MIKE to object $OBJECT_ID"
-      Long assignmentId = assignmentFacade.createAssignment(new CreateAssignmentDto(EMPLOYEE_MIKE, OBJECT_ID)).assignmentId
+      Long assignmentId = assignmentFacade.createAssignment(createNewAssignment(userId: EMPLOYEE_MIKE, objectId: OBJECT_ID)).assignmentId
     when: "admin $ADMIN_JANE deletes assignment for user $EMPLOYEE_MIKE to object $OBJECT_ID"
       assignmentFacade.deleteAssignment(assignmentId)
     then: "assignment is deleted"
@@ -80,7 +80,7 @@ class AssignmentSpec extends ContextSpec implements TimeSample, AssignmentSample
 
   def "Employee should not be able to delete assignment"() {
     given: "admin $ADMIN_JANE creates assignment for user $EMPLOYEE_MIKE to object $OBJECT_ID"
-      Long assignmentId = assignmentFacade.createAssignment(new CreateAssignmentDto(EMPLOYEE_MIKE, OBJECT_ID)).assignmentId
+      Long assignmentId = assignmentFacade.createAssignment(createNewAssignment(userId: EMPLOYEE_MIKE, objectId: OBJECT_ID)).assignmentId
     and: "$EMPLOYEE_MIKE logs in"
       loginUser(EMPLOYEE_MIKE)
     when: "$EMPLOYEE_MIKE tries to delete assignment"
@@ -98,7 +98,7 @@ class AssignmentSpec extends ContextSpec implements TimeSample, AssignmentSample
 
   def "Should get user assignments"() {
     given: "admin $ADMIN_JANE creates assignment for user $EMPLOYEE_MIKE to object $OBJECT_ID"
-      assignmentFacade.createAssignment(new CreateAssignmentDto(EMPLOYEE_MIKE, OBJECT_ID))
+      assignmentFacade.createAssignment(createNewAssignment(userId: EMPLOYEE_MIKE, objectId: OBJECT_ID))
     and: "$EMPLOYEE_MIKE logs in"
       loginUser(EMPLOYEE_MIKE)
     when: "user $EMPLOYEE_MIKE asks for his assignments"
@@ -107,5 +107,51 @@ class AssignmentSpec extends ContextSpec implements TimeSample, AssignmentSample
       assignments == [createAssignment(assignmentId: assignments[0].assignmentId, userId: EMPLOYEE_MIKE, objectId: OBJECT_ID, assignedAt: NOW,
               doneAt: null, assignmentCreatedBy: ADMIN_JANE, assignmentStatus: AssignmentStatusDto.NOT_STARTED
       )]
+  }
+
+  def "Should create assignment with due date"() {
+    when: "admin $ADMIN_JANE creates assignment for user $EMPLOYEE_MIKE to object $OBJECT_ID with due date to $WEEK_LATER"
+      long assignmentId = assignmentFacade.createAssignment(createNewAssignment(userId: EMPLOYEE_MIKE, objectId: OBJECT_ID, dueTo: WEEK_LATER)).assignmentId
+    then: "assignment is created with due date"
+      assignmentFacade.getAssignmentById(assignmentId) == createAssignment(assignmentId: assignmentId, userId: EMPLOYEE_MIKE, objectId: OBJECT_ID, assignedAt: NOW,
+              doneAt: null, assignmentCreatedBy: ADMIN_JANE, assignmentStatus: AssignmentStatusDto.NOT_STARTED, dueTo: WEEK_LATER
+      )
+  }
+
+  def "Should terminate assignment when user not complete it"() {
+    given: "admin $ADMIN_JANE creates assignment for user $EMPLOYEE_MIKE to object $OBJECT_ID with due date to $THREE_DAYS_LATER"
+      long assignmentId = assignmentFacade.createAssignment(createNewAssignment(userId: EMPLOYEE_MIKE, objectId: OBJECT_ID, dueTo: THREE_DAYS_LATER)).assignmentId
+    when: "current time is $WEEK_LATER and assignemnt is over due"
+      instantProvider.useFixedClock(WEEK_LATER)
+      assignmentFacade.outDateNotStartedAssignments()
+    then: "assignment for user $EMPLOYEE_MIKE has status overdue"
+      assignmentFacade.getAssignmentById(assignmentId) == createAssignment(assignmentId: assignmentId, userId: EMPLOYEE_MIKE, objectId: OBJECT_ID, assignedAt: NOW,
+              doneAt: null, assignmentCreatedBy: ADMIN_JANE, assignmentStatus: AssignmentStatusDto.OVERDUE, dueTo: THREE_DAYS_LATER
+      )
+  }
+
+  def "Should not be able to done assignment if it is over due"() {
+    given: "admin $ADMIN_JANE creates assignment for user $EMPLOYEE_MIKE to object $OBJECT_ID with due date to $THREE_DAYS_LATER"
+      long assignmentId = assignmentFacade.createAssignment(createNewAssignment(userId: EMPLOYEE_MIKE, objectId: OBJECT_ID, dueTo: THREE_DAYS_LATER)).assignmentId
+    and: "assignment is over due"
+      instantProvider.useFixedClock(WEEK_LATER)
+      assignmentFacade.outDateNotStartedAssignments()
+    when: "user $EMPLOYEE_MIKE tries set task to done"
+      loginUser(EMPLOYEE_MIKE)
+      assignmentFacade.setAssignmentToDone(assignmentId)
+    then: "assignment is not set to done and has still status over due"
+      thrown(OverDueAssignmentException)
+  }
+
+  def "Should not terminate assignment if current time is before due date"() {
+    given: "admin $ADMIN_JANE creates assignment for user $EMPLOYEE_MIKE to object $OBJECT_ID with due date to $WEEK_LATER"
+      long assignmentId = assignmentFacade.createAssignment(createNewAssignment(userId: EMPLOYEE_MIKE, objectId: OBJECT_ID, dueTo: WEEK_LATER)).assignmentId
+    when: "current time is $THREE_DAYS_LATER and checking out date assignments"
+      instantProvider.useFixedClock(THREE_DAYS_LATER)
+      assignmentFacade.outDateNotStartedAssignments()
+    then: "assignment for user $EMPLOYEE_MIKE is not terminated"
+      assignmentFacade.getAssignmentById(assignmentId) == createAssignment(assignmentId: assignmentId, userId: EMPLOYEE_MIKE, objectId: OBJECT_ID, assignedAt: NOW,
+              doneAt: null, assignmentCreatedBy: ADMIN_JANE, assignmentStatus: AssignmentStatusDto.NOT_STARTED, dueTo: WEEK_LATER
+      )
   }
 }

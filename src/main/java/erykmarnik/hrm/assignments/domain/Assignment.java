@@ -40,6 +40,8 @@ class Assignment {
   @Column(name = "assignment_status")
   @Enumerated(EnumType.STRING)
   AssignmentStatus assignmentStatus;
+  @Column(name = "due_to")
+  Instant dueTo;
   @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL, orphanRemoval = true)
   List<AssignmentNote> assignmentNotes = new ArrayList<>();
 
@@ -56,6 +58,7 @@ class Assignment {
             .doneAt(doneAt)
             .assignmentCreatedBy(assignmentCreatedBy)
             .assignmentStatus(assignmentStatus.dto())
+            .dueTo(dueTo)
             .build();
   }
 
@@ -69,6 +72,7 @@ class Assignment {
             .assignmentCreatedBy(assignmentCreatedBy)
             .assignmentStatus(AssignmentStatus.DONE)
             .assignmentNotes(assignmentNotes)
+            .dueTo(dueTo)
             .build();
   }
 
@@ -105,5 +109,9 @@ class Assignment {
     this.assignmentNotes.remove(assignmentNote);
     this.assignmentNotes.add(assignmentNote.modifyAssignmentNote(noteModify));
     return this;
+  }
+
+  void outDate() {
+    this.assignmentStatus = AssignmentStatus.OVERDUE;
   }
 }

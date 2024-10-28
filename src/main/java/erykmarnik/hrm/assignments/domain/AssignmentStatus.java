@@ -4,6 +4,7 @@ import erykmarnik.hrm.assignments.dto.AssignmentStatusDto;
 
 enum AssignmentStatus {
   DONE,
+  OVERDUE,
   NOT_STARTED;
 
   AssignmentStatusDto dto() {

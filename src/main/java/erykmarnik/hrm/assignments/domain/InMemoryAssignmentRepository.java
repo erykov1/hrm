@@ -1,5 +1,6 @@
 package erykmarnik.hrm.assignments.domain;
 
+import erykmarnik.hrm.assignments.dto.AssignmentStatusDto;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Example;
@@ -193,7 +194,9 @@ class InMemoryAssignmentRepository implements AssignmentRepository {
 
   @Override
   public List<Assignment> findAllNotStarted() {
-    return null;
+    return table.values().stream()
+            .filter(assignment -> assignment.dto().getAssignmentStatus().equals(AssignmentStatusDto.NOT_STARTED))
+            .collect(Collectors.toList());
   }
 
   @Override

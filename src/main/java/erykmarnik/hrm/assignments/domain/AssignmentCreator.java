@@ -19,6 +19,7 @@ class AssignmentCreator {
             .assignedAt(instantProvider.now())
             .assignmentCreatedBy(ContextHolder.getUserContext().getUserId())
             .assignmentStatus(AssignmentStatus.NOT_STARTED)
+            .dueTo(createAssignment.getDueTo())
             .build();
   }
 }

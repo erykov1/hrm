@@ -21,4 +21,5 @@ public class AssignmentDto {
   Instant doneAt;
   Long assignmentCreatedBy;
   AssignmentStatusDto assignmentStatus;
+  Instant dueTo;
 }

@@ -1,10 +1,7 @@
 package erykmarnik.hrm.assignments.domain;
 
 import erykmarnik.hrm.assignments.dto.*;
-import erykmarnik.hrm.assignments.exception.AlreadyAssignedException;
-import erykmarnik.hrm.assignments.exception.AssignmentNotFoundException;
-import erykmarnik.hrm.assignments.exception.AssignmentNoteNotFoundException;
-import erykmarnik.hrm.assignments.exception.ForbiddenAssignmentOperationException;
+import erykmarnik.hrm.assignments.exception.*;
 import erykmarnik.hrm.security.SecurityFacade;
 import erykmarnik.hrm.utils.ContextHolder;
 import erykmarnik.hrm.utils.InstantProvider;
@@ -49,6 +46,7 @@ public class AssignmentFacade {
   public void setAssignmentToDone(Long assignmentId) {
     log.info("changing status assignment" + assignmentId + "to done");
     validateAssignmentOperation(ContextHolder.getUserContext().getUserId(), assignmentId);
+    validateOverDueAssignment(assignmentId);
     Assignment assignment = assignmentRepository.findByAssignmentId(assignmentId).orElseThrow(
             () -> new AssignmentNotFoundException(assignmentId));
     eventPublisher.emmitAssignationStatusChanged(assignmentAnalytic.getUserMail(assignment.dto().getUserId()),
@@ -132,6 +130,13 @@ public class AssignmentFacade {
     }
   }
 
+  private void validateOverDueAssignment(Long assignmentId) {
+    Assignment assignment = getAssignment(assignmentId);
+    if (assignment.dto().getDueTo().isBefore(instantProvider.now())) {
+      throw new OverDueAssignmentException(assignmentId);
+    }
+  }
+
   private void validateNoteOperation(Long userId, UUID noteId) {
     Long assignmentId = getAssignmentNote(noteId).dto().getAssignmentId();
     Assignment assignment = getAssignment(assignmentId);
@@ -162,5 +167,14 @@ public class AssignmentFacade {
     if (assignmentRepository.findByObjectIdAndUserId(objectId, userId).isPresent()) {
       throw new AlreadyAssignedException(userId, objectId);
     }
+  }
+
+  void outDateNotStartedAssignments() {
+    List<Assignment> terminatedAssignments = assignmentRepository.findAllNotStarted().stream()
+            .filter(assignment -> assignment.dto().getDueTo().isBefore(instantProvider.now()))
+            .toList();
+    log.info("terminating " + terminatedAssignments.size() + " assignments");
+    terminatedAssignments.forEach(Assignment::outDate);
+    assignmentRepository.saveAll(terminatedAssignments);
   }
 }
