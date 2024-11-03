@@ -21,7 +21,7 @@ trait AssignmentSample {
           doneAt: Instant.now(),
           assignmentCreatedBy: CREATED_BY,
           assignmentStatus: AssignmentStatusDto.DONE,
-          dueTo: Instant.now()
+          dueTo: null
   ] as Map<String, Object>
 
   AssignmentDto createAssignment(Map<String, Object> changes = [:]) {

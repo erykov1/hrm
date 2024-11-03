@@ -2,7 +2,6 @@ package erykmarnik.hrm.assignments.domain
 
 import erykmarnik.hrm.assignments.dto.AssignmentAnalyticDto
 import erykmarnik.hrm.assignments.dto.AssignmentStatusDto
-import erykmarnik.hrm.assignments.dto.CreateAssignmentDto
 import erykmarnik.hrm.task.dto.CategoryDto
 import erykmarnik.hrm.task.dto.CreateCategoryDto
 import erykmarnik.hrm.task.dto.TaskDto
@@ -32,7 +31,7 @@ class AssignmentAnalyticAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
     and: "there is task $onboarding assigned to category $newEmployee"
       onboarding = createTaskRequest(jane.userId, createNewTask(createdAt: NOW, categoryId: newEmployee.categoryId))
     and: "admin $jane assinges user $mike to task $onboarding"
-      assignmentId = createAssignment(jane.userId, new CreateAssignmentDto(mike.userId, onboarding.taskId)).assignmentId
+      assignmentId = createAssignment(jane.userId, createNewAssignment(userId: mike.userId, objectId: onboarding.taskId)).assignmentId
   }
 
   def cleanup() {
@@ -66,7 +65,7 @@ class AssignmentAnalyticAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
   def "Should get analytic data for all not started assignments"() {
     given: "admin $jane assignes user $john to task $onboarding $WEEK_LATER"
       timeApiFacade.useFixedClock(WEEK_LATER)
-      johnAssignmentId = createAssignment(jane.userId, new CreateAssignmentDto(john.userId, onboarding.taskId)).assignmentId
+      johnAssignmentId = createAssignment(jane.userId, createNewAssignment(userId: john.userId, objectId: onboarding.taskId)).assignmentId
     when: "admin $jane asks for analytic data for all not started assignments"
       List<AssignmentAnalyticDto> result = assignmentApiFacade.getAllNotStartedAssignments()
     then: "gets all analytic data for all not started assignments"
@@ -81,7 +80,7 @@ class AssignmentAnalyticAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
   def "Should get analytic data for all done assignments"() {
     given: "admin $jane assignes user $john to task $onboarding $WEEK_LATER"
       timeApiFacade.useFixedClock(WEEK_LATER)
-      johnAssignmentId = createAssignment(jane.userId, new CreateAssignmentDto(john.userId, onboarding.taskId)).assignmentId
+      johnAssignmentId = createAssignment(jane.userId, createNewAssignment(userId: john.userId, objectId: onboarding.taskId)).assignmentId
     and: "user $mike set task $onboarding to done"
       setToDone(assignmentId, mike.userId)
     when: "admin $jane asks for analytic data for all done assignments"

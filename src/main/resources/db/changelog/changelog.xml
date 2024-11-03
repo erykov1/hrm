@@ -23,4 +23,8 @@
         <sqlFile path="db/changelog/sql/change-004-EM.sql" splitStatements="true" endDelimiter=";" stripComments="true" />
         <comment>adding the assignment note entity</comment>
     </changeSet>
+    <changeSet id="6" author="e.marnik">
+        <sqlFile path="db/changelog/sql/change-006-EM.sql" splitStatements="true" endDelimiter=";" stripComments="true" />
+        <comment>adding column due to to entity assignment</comment>
+    </changeSet>
 </databaseChangeLog>

@@ -1,11 +1,7 @@
 package erykmarnik.hrm.assignments.dto;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
-
 import java.time.Instant;
 import java.util.UUID;
 

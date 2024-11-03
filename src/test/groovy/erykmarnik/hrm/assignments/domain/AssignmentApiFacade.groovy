@@ -88,4 +88,9 @@ class AssignmentApiFacade extends HrmApi {
             mapper.getTypeFactory().constructCollectionType(List.class, AssignmentAnalyticDto.class))
     value
   }
+
+  void outDateNotStarted() {
+    ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/assignment/outDate").contentType(MediaType.APPLICATION_JSON))
+    checkResponse(perform.andReturn().response)
+  }
 }

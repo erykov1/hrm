@@ -43,7 +43,7 @@ class AssignmentSpec extends ContextSpec implements TimeSample, AssignmentSample
       thrown(AlreadyAssignedException)
   }
 
-  def "Should set to assignment to done if assigned user done object"() {
+  def "Should set assignment to done if assigned user done object"() {
     given: "admin $ADMIN_JANE creates assignment for user $EMPLOYEE_MIKE to object $OBJECT_ID"
       Long assignmentId = assignmentFacade.createAssignment(createNewAssignment(userId: EMPLOYEE_MIKE, objectId: OBJECT_ID)).assignmentId
     and: "user $EMPLOYEE_MIKE logs in $WEEK_LATER"

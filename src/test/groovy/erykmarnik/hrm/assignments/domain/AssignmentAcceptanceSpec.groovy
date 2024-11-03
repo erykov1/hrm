@@ -44,7 +44,7 @@ class AssignmentAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
 
   def "Should create new assignment"() {
     when: "admin $jane assignes user $mike to task $onboarding"
-      assignmentId = createAssignment(jane.userId, new CreateAssignmentDto(mike.userId, onboarding.taskId)).assignmentId
+      assignmentId = createAssignment(jane.userId, createNewAssignment(userId: mike.userId, objectId: onboarding.taskId)).assignmentId
     then: "user $mike is assigned to task $onboarding"
       getAssignment(assignmentId, jane.userId) == createAssignment(assignmentId: assignmentId, userId: mike.userId,
               objectId: onboarding.taskId, assignedAt: NOW, doneAt: null, assignmentCreatedBy: jane.userId,
@@ -54,7 +54,7 @@ class AssignmentAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
 
   def "Should delete assignment"() {
     given: "admin $jane assignes user $mike to task $onboarding"
-      assignmentId = createAssignment(jane.userId, new CreateAssignmentDto(mike.userId, onboarding.taskId)).assignmentId
+      assignmentId = createAssignment(jane.userId, createNewAssignment(userId: mike.userId, objectId: onboarding.taskId)).assignmentId
     when: "admin $jane deletes assignment $assignmentId"
       assignmentId = deleteAssignment(assignmentId, jane.userId)
     then: "assignment is removed"
@@ -63,7 +63,7 @@ class AssignmentAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
 
   def "Should set assignment to done"() {
     given: "admin $jane assignes user $mike to task $onboarding"
-      assignmentId = createAssignment(jane.userId, new CreateAssignmentDto(mike.userId, onboarding.taskId)).assignmentId
+      assignmentId = createAssignment(jane.userId, createNewAssignment(userId: mike.userId, objectId: onboarding.taskId)).assignmentId
     and: "employee $mike logs in $WEEK_LATER"
       timeApiFacade.useFixedClock(WEEK_LATER)
       ContextHolder.setUserContext(new UserContext(mike.userId))
@@ -77,12 +77,45 @@ class AssignmentAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
 
   def "Should get user assignment"() {
     given: "admin $jane assignes user $mike to task $onboarding"
-      assignmentId = createAssignment(jane.userId, new CreateAssignmentDto(mike.userId, onboarding.taskId)).assignmentId
+      assignmentId = createAssignment(jane.userId, createNewAssignment(userId: mike.userId, objectId: onboarding.taskId)).assignmentId
     when: "$mike asks for assignments"
       List<AssignmentDto> assignments = getUserAssignment(mike.userId)
     then: "$mike gets his all assignments"
       assignments == [createAssignment(assignmentId: assignmentId, userId: mike.userId, objectId: onboarding.taskId, assignedAt: NOW,
               doneAt: null, assignmentCreatedBy: jane.userId, assignmentStatus: AssignmentStatusDto.NOT_STARTED
+      )]
+  }
+
+  def "Should create assignment with due date"() {
+    when: "admin $jane assignes user $mike to task $onboarding with due date $WEEK_LATER"
+      assignmentId = createAssignment(jane.userId, createNewAssignment(userId: mike.userId, objectId: onboarding.taskId, dueTo: WEEK_LATER)).assignmentId
+    then: "assignment is created with due date"
+      getUserAssignment(mike.userId) == [createAssignment(assignmentId: assignmentId, userId: mike.userId, objectId: onboarding.taskId, assignedAt: NOW,
+              doneAt: null, assignmentCreatedBy: jane.userId, assignmentStatus: AssignmentStatusDto.NOT_STARTED, dueTo: WEEK_LATER
+      )]
+  }
+
+  def "Should terminate assignment when user not complete it"() {
+    given: "admin $jane assignes user $mike to task $onboarding with due date $THREE_DAYS_LATER"
+      assignmentId = createAssignment(jane.userId, createNewAssignment(userId: mike.userId, objectId: onboarding.taskId, dueTo: THREE_DAYS_LATER)).assignmentId
+    when: "current time is $WEEK_LATER"
+      timeApiFacade.useFixedClock(WEEK_LATER)
+      assignmentApiFacade.outDateNotStarted()
+    then: "assignment $assignmentId is terminated"
+      getUserAssignment(mike.userId) == [createAssignment(assignmentId: assignmentId, userId: mike.userId, objectId: onboarding.taskId, assignedAt: NOW,
+              doneAt: null, assignmentCreatedBy: jane.userId, assignmentStatus: AssignmentStatusDto.OVERDUE, dueTo: THREE_DAYS_LATER
+      )]
+  }
+
+  def "Should not terminate assignment if current time is before due date"() {
+    given: "admin $jane assignes user $mike to task $onboarding with due date $WEEK_LATER"
+      assignmentId = createAssignment(jane.userId, createNewAssignment(userId: mike.userId, objectId: onboarding.taskId, dueTo: WEEK_LATER)).assignmentId
+    when: "current time is $THREE_DAYS_LATER"
+      timeApiFacade.useFixedClock(THREE_DAYS_LATER)
+      assignmentApiFacade.outDateNotStarted()
+    then: "assignment $assignmentId is not terminated"
+      getUserAssignment(mike.userId) == [createAssignment(assignmentId: assignmentId, userId: mike.userId, objectId: onboarding.taskId, assignedAt: NOW,
+              doneAt: null, assignmentCreatedBy: jane.userId, assignmentStatus: AssignmentStatusDto.NOT_STARTED, dueTo: WEEK_LATER
       )]
   }
 }

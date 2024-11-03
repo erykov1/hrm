@@ -33,7 +33,7 @@ class AssignmentNoteAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
       ContextHolder.setUserContext(new UserContext(jane.userId))
       onboarding = createTaskRequest(jane.userId, createNewTask(createdAt: NOW, categoryId: newEmployee.categoryId))
     and: "user $mike is assigned to task $onboarding"
-      assignment = createAssignment(jane.userId, new CreateAssignmentDto(mike.userId, onboarding.taskId))
+      assignment = createAssignment(jane.userId, createNewAssignment(userId: mike.userId, objectId: onboarding.taskId))
   }
 
   def cleanup() {

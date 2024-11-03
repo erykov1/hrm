@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -132,9 +133,13 @@ public class AssignmentFacade {
 
   private void validateOverDueAssignment(Long assignmentId) {
     Assignment assignment = getAssignment(assignmentId);
-    if (assignment.dto().getDueTo().isBefore(instantProvider.now())) {
+    if (isOverDue(assignment.dto().getDueTo())) {
       throw new OverDueAssignmentException(assignmentId);
     }
+  }
+
+  private boolean isOverDue(Instant dueTo) {
+    return dueTo != null && dueTo.isBefore(instantProvider.now());
   }
 
   private void validateNoteOperation(Long userId, UUID noteId) {
@@ -169,9 +174,9 @@ public class AssignmentFacade {
     }
   }
 
-  void outDateNotStartedAssignments() {
+  public void outDateNotStartedAssignments() {
     List<Assignment> terminatedAssignments = assignmentRepository.findAllNotStarted().stream()
-            .filter(assignment -> assignment.dto().getDueTo().isBefore(instantProvider.now()))
+            .filter(assignment -> isOverDue(assignment.dto().getDueTo()))
             .toList();
     log.info("terminating " + terminatedAssignments.size() + " assignments");
     terminatedAssignments.forEach(Assignment::outDate);

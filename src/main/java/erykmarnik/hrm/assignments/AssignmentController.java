@@ -2,10 +2,13 @@ package erykmarnik.hrm.assignments;
 
 import erykmarnik.hrm.assignments.domain.AssignmentFacade;
 import erykmarnik.hrm.assignments.dto.*;
+import erykmarnik.hrm.config.Profiles;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -103,5 +106,14 @@ class AssignmentController {
   @PutMapping("/note/modify/{noteId}")
   ResponseEntity<AssignmentNoteDto> modifyAssignmentNote(@PathVariable UUID noteId, @RequestBody AssignmentNoteModifyDto noteModify) {
     return ResponseEntity.ok(assignmentFacade.modifyAssignmentNote(noteId, noteModify));
+  }
+
+  @Profile(Profiles.TEST)
+  @Hidden
+  @PreAuthorize("hasRole('ADMIN')")
+  @GetMapping("/outDate")
+  ResponseEntity<Void> outDateAssignments() {
+    assignmentFacade.outDateNotStartedAssignments();
+    return ResponseEntity.ok().build();
   }
 }

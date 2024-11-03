@@ -3,7 +3,6 @@ package erykmarnik.hrm.assignments.domain
 import erykmarnik.hrm.assignments.dto.AssignmentDto
 import erykmarnik.hrm.assignments.dto.AssignmentNoteDto
 import erykmarnik.hrm.assignments.dto.AssignmentNoteModifyDto
-import erykmarnik.hrm.assignments.dto.CreateAssignmentDto
 import erykmarnik.hrm.assignments.dto.CreateAssignmentNoteDto
 import erykmarnik.hrm.assignments.exception.ForbiddenAssignmentOperationException
 import erykmarnik.hrm.assignments.sample.AssignmentNoteSample
@@ -24,7 +23,7 @@ class AssignmentNoteSpec extends ContextSpec implements TimeSample, AssignmentSa
     given: "admin $ADMIN_JANE is logged in"
       loginUser(ADMIN_JANE)
     and: "admin $ADMIN_JANE created assignment for user $EMPLOYEE_MIKE"
-      assignment = assignmentFacade.createAssignment(new CreateAssignmentDto(EMPLOYEE_MIKE, OBJECT_ID))
+      assignment = assignmentFacade.createAssignment(createNewAssignment(userId: EMPLOYEE_MIKE, objectId: OBJECT_ID))
     and: "employee $EMPLOYEE_MIKE is logged in"
       loginUser(EMPLOYEE_MIKE)
   }
