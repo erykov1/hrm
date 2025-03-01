@@ -65,30 +65,6 @@ class AssignmentApiFacade extends HrmApi {
     value
   }
 
-  List<AssignmentAnalyticDto> getAllDoneAssignments() {
-    ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/assignment/all/done").contentType(MediaType.APPLICATION_JSON))
-    checkResponse(perform.andReturn().response)
-    List<AssignmentAnalyticDto> value = mapper.readValue(perform.andReturn().response.getContentAsString(StandardCharsets.UTF_8),
-            mapper.getTypeFactory().constructCollectionType(List.class, AssignmentAnalyticDto.class))
-    value
-  }
-
-  List<AssignmentAnalyticDto> getAllNotStartedAssignments() {
-    ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/assignment/all/notStarted").contentType(MediaType.APPLICATION_JSON))
-    checkResponse(perform.andReturn().response)
-    List<AssignmentAnalyticDto> value = mapper.readValue(perform.andReturn().response.getContentAsString(StandardCharsets.UTF_8),
-            mapper.getTypeFactory().constructCollectionType(List.class, AssignmentAnalyticDto.class))
-    value
-  }
-
-  List<AssignmentAnalyticDto> getAllForUser(Long userId) {
-    ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/assignment/all/{userId}", userId).contentType(MediaType.APPLICATION_JSON))
-    checkResponse(perform.andReturn().response)
-    List<AssignmentAnalyticDto> value = mapper.readValue(perform.andReturn().response.getContentAsString(StandardCharsets.UTF_8),
-            mapper.getTypeFactory().constructCollectionType(List.class, AssignmentAnalyticDto.class))
-    value
-  }
-
   void outDateNotStarted() {
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/assignment/outDate").contentType(MediaType.APPLICATION_JSON))
     checkResponse(perform.andReturn().response)

@@ -1,9 +1,9 @@
 package erykmarnik.hrm.assignments.sample
 
+import erykmarnik.hrm.analytic.dto.AssignmentInfoDto
+import erykmarnik.hrm.analytic.dto.UserAssignmentDto
 import erykmarnik.hrm.assignments.dto.AssignmentAnalyticDto
 import erykmarnik.hrm.assignments.dto.AssignmentStatusDto
-import erykmarnik.hrm.user.dto.UserDto
-
 import java.time.Instant
 
 trait AssignmentAnalyticSample {
@@ -24,41 +24,34 @@ trait AssignmentAnalyticSample {
           surname: SURNAME,
           objectName: OBJECT_NAME,
           minutesTakenToDoneTask: MINUTES_TAKEN_TO_DONE,
-          startedAt: Date.from(Instant.now()),
+          assignedAt: Date.from(Instant.now()),
           endedAt: Date.from(Instant.now()),
           assignmentStatus: AssignmentStatusDto.DONE,
           category: CATEGORY_NAME
   ] as Map<String, Object>
 
-  AssignmentAnalyticDto createAssignmentAnalytic(Map<String, Object> changes = [:]) {
+  AssignmentInfoDto createAssignmentAnalytic(Map<String, Object> changes = [:]) {
     def changesWithDefaults = DEFAULT_ASSIGNMENT_ANALYTIC_DATA + changes
-    AssignmentAnalyticDto.builder()
-            .userId(changesWithDefaults.userId as Long)
+    AssignmentInfoDto.builder()
             .username(changesWithDefaults.username as String)
             .name(changesWithDefaults.name as String)
             .surname(changesWithDefaults.surname as String)
             .objectName(changesWithDefaults.objectName as String)
-            .minutesTakenToDone(changesWithDefaults.minutesTakenToDone as Long)
-            .startedAt(changesWithDefaults.startedAt as Date)
+            .assignedAt(changesWithDefaults.assignedAt as Date)
             .endedAt(changesWithDefaults.endedAt as Date)
             .assignmentStatus(changesWithDefaults.assignmentStatus as AssignmentStatusDto)
             .category(changesWithDefaults.category as String)
             .build()
   }
 
-  void equalsAssignments(List<AssignmentAnalyticDto> result, List<AssignmentAnalyticDto> expected) {
-    def comparator = Comparator.comparing(AssignmentAnalyticDto::getStartedAt)
-    result.sort(comparator)
-    expected.sort(comparator)
-    assert result.userId == expected.userId
-    assert result.username == expected.username
-    assert result.name == expected.name
-    assert result.surname == expected.surname
-    assert result.objectName == expected.objectName
-    assert result.minutesTakenToDone == expected.minutesTakenToDone
-    assert result.startedAt == expected.startedAt
-    assert result.endedAt == expected.endedAt
-    assert result.assignmentStatus == expected.assignmentStatus
-    assert result.category == expected.category
+  UserAssignmentDto createUserAssignment(Map<String, Object> changes = [:]) {
+    def changesWithDefaults = DEFAULT_ASSIGNMENT_ANALYTIC_DATA + changes
+    UserAssignmentDto.builder()
+            .objectName(changesWithDefaults.objectName as String)
+            .assignedAt(changesWithDefaults.assignedAt as Date)
+            .endedAt(changesWithDefaults.endedAt as Date)
+            .assignmentStatus(changesWithDefaults.assignmentStatus as AssignmentStatusDto)
+            .category(changesWithDefaults.category as String)
+            .build()
   }
 }

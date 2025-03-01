@@ -75,21 +75,6 @@ public class AssignmentFacade {
     return assignmentRepository.findAll().stream().map(Assignment::dto).collect(Collectors.toList());
   }
 
-  public List<AssignmentAnalyticDto> getAllUserAssignmentsFor(Long userId) {
-    log.info("getting all user assignments: " + userId);
-    return assignmentAnalytic.getAllUserAssignments(userId);
-  }
-
-  public List<AssignmentAnalyticDto> getAllNotStarted() {
-    log.info("getting all not started assignments");
-    return assignmentAnalytic.getAllNotStartedAssignments();
-  }
-
-  public List<AssignmentAnalyticDto> getAllDone() {
-    log.info("getting all done assignments");
-    return assignmentAnalytic.getAllDoneAssignments();
-  }
-
   public AssignmentNoteDto addAssignmentNote(CreateAssignmentNoteDto note) {
     log.info("creating note assignment");
     validateAssignmentOperation(ContextHolder.getUserContext().getUserId(), note.getAssignmentId());

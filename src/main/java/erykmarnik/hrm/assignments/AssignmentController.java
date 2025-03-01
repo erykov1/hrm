@@ -65,24 +65,6 @@ class AssignmentController {
     return ResponseEntity.ok(assignmentFacade.getAllAssignments());
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
-  @GetMapping("/all/done")
-  ResponseEntity<List<AssignmentAnalyticDto>> getAllDoneAssignments() {
-    return ResponseEntity.ok(assignmentFacade.getAllDone());
-  }
-
-  @PreAuthorize("hasRole('ADMIN')")
-  @GetMapping("/all/notStarted")
-  ResponseEntity<List<AssignmentAnalyticDto>> getAllNotStartedAssignments() {
-    return ResponseEntity.ok(assignmentFacade.getAllNotStarted());
-  }
-
-  @PreAuthorize("hasRole('ADMIN')")
-  @GetMapping("/all/{userId}")
-  ResponseEntity<List<AssignmentAnalyticDto>> getAllForUser(@PathVariable Long userId) {
-    return ResponseEntity.ok(assignmentFacade.getAllUserAssignmentsFor(userId));
-  }
-
   @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
   @PostMapping("/note/add")
   ResponseEntity<AssignmentNoteDto> addAssignmentNote(@RequestBody CreateAssignmentNoteDto note) {
