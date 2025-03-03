@@ -1,14 +1,18 @@
 package erykmarnik.hrm.user.domain
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import erykmarnik.hrm.integration.HrmApi
+import erykmarnik.hrm.integration.UserRequest
 import erykmarnik.hrm.user.dto.CreateUserDto
 import erykmarnik.hrm.user.dto.ModifyUserDto
+import erykmarnik.hrm.user.dto.UserContext
 import erykmarnik.hrm.user.dto.UserDto
-import erykmarnik.hrm.integration.HrmApi
-import com.fasterxml.jackson.databind.ObjectMapper
+import erykmarnik.hrm.utils.ContextHolder
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+
 import java.nio.charset.StandardCharsets
 
 class UserApiFacade extends HrmApi {
@@ -40,7 +44,8 @@ class UserApiFacade extends HrmApi {
     value
   }
 
-  List<UserDto> getUsers() {
+  List<UserDto> getUsers(UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/user/all").contentType(MediaType.APPLICATION_JSON))
     checkResponse(perform.andReturn().response)
     List<UserDto> value = mapper.readValue(perform.andReturn().response.getContentAsString(StandardCharsets.UTF_8),
@@ -48,8 +53,9 @@ class UserApiFacade extends HrmApi {
     value
   }
 
-  UserDto modifyUser(ModifyUserDto modifyUser, Long userId) {
-    ResultActions perform = mvc.perform(MockMvcRequestBuilders.put("/api/user/modify/{userId}", userId)
+  UserDto modifyUser(ModifyUserDto modifyUser, UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
+    ResultActions perform = mvc.perform(MockMvcRequestBuilders.put("/api/user/modify/{userId}", userRequest.getUserId())
             .contentType(MediaType.APPLICATION_JSON)
             .content(mapper.writeValueAsString(modifyUser))
     )
@@ -58,12 +64,14 @@ class UserApiFacade extends HrmApi {
     value
   }
 
-  void deleteUser(Long userId) {
+  void deleteUser(Long userId, UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.delete("/api/user/delete/{userId}", userId))
     checkResponse(perform.andReturn().response)
   }
 
-  UserDto getByUserId(Long userId) {
+  UserDto getByUserId(Long userId, UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/user/{userId}", userId).contentType(MediaType.APPLICATION_JSON))
     checkResponse(perform.andReturn().response)
     UserDto value = mapper.readValue(perform.andReturn().response.getContentAsString(StandardCharsets.UTF_8), mapper.getTypeFactory().constructType(UserDto.class))

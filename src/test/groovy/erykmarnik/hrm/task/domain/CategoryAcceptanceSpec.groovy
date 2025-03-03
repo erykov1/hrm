@@ -1,12 +1,11 @@
 package erykmarnik.hrm.task.domain
 
+import erykmarnik.hrm.integration.UserRequest
 import erykmarnik.hrm.task.dto.CategoryDto
 import erykmarnik.hrm.task.dto.CreateCategoryDto
 import erykmarnik.hrm.task.dto.NewCategoryNameDto
 import erykmarnik.hrm.task.dto.TaskDto
-import erykmarnik.hrm.user.dto.UserContext
 import erykmarnik.hrm.user.dto.UserDto
-import erykmarnik.hrm.utils.ContextHolder
 
 class CategoryAcceptanceSpec extends CategoryAcceptanceBaseSpec {
   private UserDto jane
@@ -20,43 +19,40 @@ class CategoryAcceptanceSpec extends CategoryAcceptanceBaseSpec {
 
     given: "there is admin $jane"
       jane = userApiFacade.createAdmin(createNewUser(username: "jane123", name: "Jane", surname: "Doe"))
-      ContextHolder.setUserContext(new UserContext(jane.userId))
   }
 
   def cleanup() {
     timeApiFacade.useSystemClock()
     if (!isTaskDeleted && task != null) {
-      taskApiFacade.deleteTask(task.getTaskId())
+      taskApiFacade.deleteTask(task.getTaskId(), new UserRequest(jane))
     }
-    categoryApiFacade.deleteCategory(onboardingCategoryId)
-    categoryApiFacade.deleteCategory(newsCategoryId)
-    userApiFacade.deleteUser(jane.getUserId())
-    ContextHolder.clear()
+    categoryApiFacade.deleteCategory(onboardingCategoryId, new UserRequest(jane))
+    categoryApiFacade.deleteCategory(newsCategoryId, new UserRequest(jane))
+    userApiFacade.deleteUser(jane.getUserId(), new UserRequest(jane))
   }
 
   def "Should create new category"() {
     when: "admin $jane creates new category $onboardingCategoryId"
-      onboardingCategoryId = createCategoryRequest(jane.userId, new CreateCategoryDto(ONBOARDING)).categoryId
+      onboardingCategoryId = categoryApiFacade.createCategory(new CreateCategoryDto(ONBOARDING), new UserRequest(jane)).categoryId
     then: "category $onboardingCategoryId is created"
-      getCategory(jane.userId, onboardingCategoryId) == createCategory(categoryId: onboardingCategoryId, categoryName: ONBOARDING,
+      categoryApiFacade.getCategory(onboardingCategoryId, new UserRequest(jane)) == createCategory(categoryId: onboardingCategoryId, categoryName: ONBOARDING,
               createdBy: jane.userId, createdAt: NOW)
   }
 
   def "Should change category name"() {
     given: "there is category $onboardingCategoryId"
-      onboardingCategoryId = createCategoryRequest(jane.userId, new CreateCategoryDto(ONBOARDING)).categoryId
+      onboardingCategoryId = categoryApiFacade.createCategory(new CreateCategoryDto(ONBOARDING), new UserRequest(jane)).categoryId
     when: "admin $jane change category $onboardingCategoryId name"
-      CategoryDto onboardingCategory = modifyCategory(jane.userId, onboardingCategoryId, new NewCategoryNameDto(NEWS))
+      CategoryDto onboardingCategory = categoryApiFacade.modifyCategory(onboardingCategoryId, new NewCategoryNameDto(NEWS), new UserRequest(jane))
     then: "category $onboardingCategoryId name is changed to $NEWS"
-      onboardingCategory == createCategory(categoryId: onboardingCategoryId, categoryName: NEWS, createdBy: jane.userId,
-              createdAt: NOW)
+      onboardingCategory == createCategory(categoryId: onboardingCategoryId, categoryName: NEWS, createdBy: jane.userId, createdAt: NOW)
   }
 
   def "Should get category by category id"() {
     given: "there is category $onboardingCategoryId"
-      onboardingCategoryId = createCategoryRequest(jane.userId, new CreateCategoryDto(ONBOARDING)).categoryId
+      onboardingCategoryId = categoryApiFacade.createCategory(new CreateCategoryDto(ONBOARDING), new UserRequest(jane)).categoryId
     when: "admin $jane asks for category"
-      CategoryDto result = getCategory(jane.userId, onboardingCategoryId)
+      CategoryDto result = categoryApiFacade.getCategory(onboardingCategoryId, new UserRequest(jane))
     then: "gets category $onboardingCategoryId"
       result == createCategory(categoryId: onboardingCategoryId, categoryName: ONBOARDING, createdBy: jane.userId,
             createdAt: NOW)
@@ -64,21 +60,21 @@ class CategoryAcceptanceSpec extends CategoryAcceptanceBaseSpec {
 
   def "Should delete category"() {
     given: "there is category $onboardingCategoryId"
-      onboardingCategoryId = createCategoryRequest(jane.userId, new CreateCategoryDto(ONBOARDING)).categoryId
+      onboardingCategoryId = categoryApiFacade.createCategory(new CreateCategoryDto(ONBOARDING), new UserRequest(jane)).categoryId
     when: "admin $jane deletes category $onboardingCategoryId"
-      onboardingCategoryId = deleteCategory(onboardingCategoryId)
+      onboardingCategoryId = deleteCategory(onboardingCategoryId, new UserRequest(jane))
     then: "category $onboardingCategoryId is deleted"
-      getAllCategories(jane.userId) == []
+      categoryApiFacade.getAllCategories(new UserRequest(jane)) == []
   }
 
   def "Should get all categories"() {
     given: "there is category $onboardingCategoryId"
-      onboardingCategoryId = createCategoryRequest(jane.userId, new CreateCategoryDto(ONBOARDING)).categoryId
-    and: "admin jane creates $newsCategoryId $WEEK_LATER"
+      onboardingCategoryId = categoryApiFacade.createCategory(new CreateCategoryDto(ONBOARDING), new UserRequest(jane)).categoryId
+    and: "admin $jane creates $newsCategoryId $WEEK_LATER"
       timeApiFacade.useFixedClock(WEEK_LATER)
-      newsCategoryId = createCategoryRequest(jane.userId, new CreateCategoryDto(NEWS)).categoryId
+      newsCategoryId = categoryApiFacade.createCategory(new CreateCategoryDto(NEWS), new UserRequest(jane)).categoryId
     when: "admin $jane asks for all categories"
-      List<CategoryDto> result = getAllCategories(jane.userId)
+      List<CategoryDto> result = categoryApiFacade.getAllCategories(new UserRequest(jane))
     then: "admin $jane gets all categories"
       equalsCategories(result, [createCategory(categoryId: onboardingCategoryId, categoryName: ONBOARDING, createdBy: jane.userId,
               createdAt: NOW), createCategory(categoryId: newsCategoryId, categoryName: NEWS, createdBy: jane.userId,
@@ -87,28 +83,26 @@ class CategoryAcceptanceSpec extends CategoryAcceptanceBaseSpec {
 
   def "Should get all tasks for category"() {
     given: "there is category $onboardingCategoryId"
-      onboardingCategoryId = createCategoryRequest(jane.userId, new CreateCategoryDto(ONBOARDING)).categoryId
+      onboardingCategoryId = categoryApiFacade.createCategory(new CreateCategoryDto(ONBOARDING), new UserRequest(jane)).categoryId
     and: "admin $jane creates task $task in category $onboardingCategoryId"
-      ContextHolder.setUserContext(new UserContext(jane.userId))
-      task = taskApiFacade.createTask(createNewTask(categoryId: onboardingCategoryId))
+      task = taskApiFacade.createTask(createNewTask(categoryId: onboardingCategoryId), new UserRequest(jane))
     when: "admin $jane asks for all tasks in category $onboardingCategoryId"
-      List<TaskDto> result = getTasksForCategory(jane.userId, onboardingCategoryId)
+      List<TaskDto> result = categoryApiFacade.getTasksForCategory(onboardingCategoryId, new UserRequest(jane))
     then: "admin $jane gets all tasks assigned to category $onboardingCategoryId"
       result == [createTask(taskId: task.taskId, createdAt: NOW, createdBy: jane.userId, categoryId: onboardingCategoryId)]
     when: "admin $jane deletes task $task"
-      isTaskDeleted = deleteTask(task.taskId)
+      isTaskDeleted = deleteTaskBy(task.taskId, new UserRequest(jane))
     then: "there are no tasks assigned to category $onboardingCategoryId"
-      getTasksForCategory(jane.userId, onboardingCategoryId) == []
+      categoryApiFacade.getTasksForCategory(onboardingCategoryId, new UserRequest(jane)) == []
   }
 
-  private boolean deleteTask(UUID taskId) {
-    taskApiFacade.deleteTask(taskId)
+  private boolean deleteTaskBy(UUID taskId, UserRequest userRequest) {
+    taskApiFacade.deleteTask(taskId, userRequest)
     return true
   }
 
-  private long deleteCategory(long categoryId) {
-    ContextHolder.setUserContext(new UserContext(jane.userId))
-    categoryApiFacade.deleteCategory(categoryId)
+  private long deleteCategory(long categoryId, UserRequest userRequest) {
+    categoryApiFacade.deleteCategory(categoryId, userRequest)
     return 0
   }
 }

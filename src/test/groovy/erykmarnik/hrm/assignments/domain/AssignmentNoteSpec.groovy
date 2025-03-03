@@ -7,6 +7,7 @@ import erykmarnik.hrm.assignments.dto.CreateAssignmentNoteDto
 import erykmarnik.hrm.assignments.exception.ForbiddenAssignmentOperationException
 import erykmarnik.hrm.assignments.sample.AssignmentNoteSample
 import erykmarnik.hrm.assignments.sample.AssignmentSample
+import erykmarnik.hrm.user.dto.UserRoleDto
 import erykmarnik.hrm.utils.ContextSpec
 import erykmarnik.hrm.utils.InstantProvider
 import erykmarnik.hrm.utils.sample.TimeSample
@@ -15,7 +16,7 @@ import org.springframework.context.ApplicationEventPublisher
 class AssignmentNoteSpec extends ContextSpec implements TimeSample, AssignmentSample, AssignmentNoteSample {
   private InstantProvider instantProvider = new InstantProvider()
   private ApplicationEventPublisher eventPublisher = Mock(ApplicationEventPublisher)
-  private AssignmentFacade assignmentFacade = new AssignmentConfiguration().assignmentFacade(instantProvider, securityFacade, Stub(AssignmentAnalytic.class), eventPublisher)
+  private AssignmentFacade assignmentFacade = new AssignmentConfiguration().assignmentFacade(instantProvider, Stub(AssignmentAnalytic.class), eventPublisher)
   private AssignmentDto assignment
 
   def setup() {
@@ -37,7 +38,7 @@ class AssignmentNoteSpec extends ContextSpec implements TimeSample, AssignmentSa
 
   def "Should not add note if not authorized user tries to add"() {
     given: "employee $EMPLOYEE_JOHN logs in"
-      loginUser(EMPLOYEE_JOHN)
+      loginUser(EMPLOYEE_JOHN, UserRoleDto.EMPLOYEE)
     when: "employee $EMPLOYEE_JOHN tries to add note to object"
       assignmentFacade.addAssignmentNote(new CreateAssignmentNoteDto(NOTE_CONTENT, assignment.assignmentId))
     then: "note is not added"
@@ -57,7 +58,7 @@ class AssignmentNoteSpec extends ContextSpec implements TimeSample, AssignmentSa
     given: "user $EMPLOYEE_MIKE adds note to assignment"
       UUID noteId = assignmentFacade.addAssignmentNote(new CreateAssignmentNoteDto(NOTE_CONTENT, assignment.assignmentId)).noteId
     and: "user $EMPLOYEE_JOHN logs in"
-      loginUser(EMPLOYEE_JOHN)
+      loginUser(EMPLOYEE_JOHN, UserRoleDto.EMPLOYEE)
     when: "user $EMPLOYEE_JOHN tries to edit note content"
       assignmentFacade.modifyAssignmentNote(noteId, new AssignmentNoteModifyDto("new content for note"))
     then: "note content is not modified"
@@ -68,7 +69,7 @@ class AssignmentNoteSpec extends ContextSpec implements TimeSample, AssignmentSa
     given: "user $EMPLOYEE_MIKE adds note to assignment"
       assignmentFacade.addAssignmentNote(new CreateAssignmentNoteDto(NOTE_CONTENT, assignment.assignmentId))
     and: "user $EMPLOYEE_JOHN logs in"
-      loginUser(EMPLOYEE_JOHN)
+      loginUser(EMPLOYEE_JOHN, UserRoleDto.EMPLOYEE)
     when: "user $EMPLOYEE_JOHN asks for note"
       assignmentFacade.getNotesForAssignment(assignment.assignmentId)
     then: "user does not get note"
@@ -88,7 +89,7 @@ class AssignmentNoteSpec extends ContextSpec implements TimeSample, AssignmentSa
     given: "user $EMPLOYEE_MIKE adds note to assignment"
       UUID noteId = assignmentFacade.addAssignmentNote(new CreateAssignmentNoteDto(NOTE_CONTENT, assignment.assignmentId)).noteId
     and: "user $EMPLOYEE_JOHN logs in"
-      loginUser(EMPLOYEE_JOHN)
+      loginUser(EMPLOYEE_JOHN, UserRoleDto.EMPLOYEE)
     when: "user $EMPLOYEE_JOHN tries to delete note"
       assignmentFacade.deleteAssignmentNote(noteId)
     then: "note is not deleted"

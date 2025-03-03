@@ -2,14 +2,18 @@ package erykmarnik.hrm.task.domain
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import erykmarnik.hrm.integration.HrmApi
+import erykmarnik.hrm.integration.UserRequest
 import erykmarnik.hrm.task.dto.CategoryDto
 import erykmarnik.hrm.task.dto.CreateCategoryDto
 import erykmarnik.hrm.task.dto.NewCategoryNameDto
 import erykmarnik.hrm.task.dto.TaskDto
+import erykmarnik.hrm.user.dto.UserContext
+import erykmarnik.hrm.utils.ContextHolder
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+
 import java.nio.charset.StandardCharsets
 
 class CategoryApiFacade extends HrmApi {
@@ -22,7 +26,8 @@ class CategoryApiFacade extends HrmApi {
     this.mapper = mapper
   }
 
-  CategoryDto createCategory(CreateCategoryDto createCategory) {
+  CategoryDto createCategory(CreateCategoryDto createCategory, UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.post(CATEGORY_API_PATH + "/create")
             .contentType(MediaType.APPLICATION_JSON)
             .content(mapper.writeValueAsString(createCategory))
@@ -32,7 +37,8 @@ class CategoryApiFacade extends HrmApi {
     value
   }
 
-  CategoryDto modifyCategory(Long categoryId, NewCategoryNameDto newCategoryName) {
+  CategoryDto modifyCategory(Long categoryId, NewCategoryNameDto newCategoryName, UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.put(CATEGORY_API_PATH + "/{categoryId}/modify", categoryId)
             .contentType(MediaType.APPLICATION_JSON)
             .content(mapper.writeValueAsString(newCategoryName))
@@ -42,14 +48,16 @@ class CategoryApiFacade extends HrmApi {
     value
   }
 
-  void deleteCategory(Long categoryId) {
+  void deleteCategory(Long categoryId, UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     if (categoryId != 0) {
       ResultActions perform = mvc.perform(MockMvcRequestBuilders.delete(CATEGORY_API_PATH + "/{categoryId}/delete", categoryId))
       checkResponse(perform.andReturn().response)
     }
   }
 
-  CategoryDto getCategory(Long categoryId) {
+  CategoryDto getCategory(Long categoryId, UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.get(CATEGORY_API_PATH + "/{categoryId}", categoryId)
             .contentType(MediaType.APPLICATION_JSON)
     )
@@ -58,14 +66,16 @@ class CategoryApiFacade extends HrmApi {
     value
   }
 
-  List<TaskDto> getTasksForCategory(Long categoryId) {
+  List<TaskDto> getTasksForCategory(Long categoryId, UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.get(CATEGORY_API_PATH + "/{categoryId}/tasks", categoryId).contentType(MediaType.APPLICATION_JSON))
     List<TaskDto> value = mapper.readValue(perform.andReturn().response.getContentAsString(StandardCharsets.UTF_8),
             mapper.getTypeFactory().constructCollectionType(List.class, TaskDto.class))
     value
   }
 
-  List<CategoryDto> getAllCategories() {
+  List<CategoryDto> getAllCategories(UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.get(CATEGORY_API_PATH + "/all").contentType(MediaType.APPLICATION_JSON))
     List<CategoryDto> value = mapper.readValue(perform.andReturn().response.getContentAsString(StandardCharsets.UTF_8),
             mapper.getTypeFactory().constructCollectionType(List.class, CategoryDto.class))

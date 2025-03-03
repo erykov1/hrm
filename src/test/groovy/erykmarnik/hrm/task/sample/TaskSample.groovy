@@ -2,6 +2,7 @@ package erykmarnik.hrm.task.sample
 
 import erykmarnik.hrm.task.dto.CreateTaskDto
 import erykmarnik.hrm.task.dto.TaskDto
+
 import java.time.Instant
 
 trait TaskSample {

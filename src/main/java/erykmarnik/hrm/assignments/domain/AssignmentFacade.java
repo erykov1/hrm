@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 public class AssignmentFacade {
   AssignmentRepository assignmentRepository;
   AssignmentCreator assignmentCreator;
-  SecurityFacade securityFacade;
   InstantProvider instantProvider;
   AssignmentAnalytic assignmentAnalytic;
   EventPublisher eventPublisher;
@@ -110,7 +109,7 @@ public class AssignmentFacade {
 
   private void validateAssignmentOperation(Long userId, Long assignmentId) {
     Assignment assignment = getAssignment(assignmentId);
-    if (!securityFacade.isAdmin(userId) && !assignment.dto().getAssignmentCreatedBy().equals(userId)
+    if (!ContextHolder.isAdmin() && !assignment.dto().getAssignmentCreatedBy().equals(userId)
             && !assignment.dto().getUserId().equals(userId)) {
       throw new ForbiddenAssignmentOperationException(assignmentId);
     }
@@ -130,7 +129,7 @@ public class AssignmentFacade {
   private void validateNoteOperation(Long userId, UUID noteId) {
     Long assignmentId = getAssignmentNote(noteId).dto().getAssignmentId();
     Assignment assignment = getAssignment(assignmentId);
-    if (!securityFacade.isAdmin(userId) && !assignment.dto().getAssignmentCreatedBy().equals(userId)
+    if (!ContextHolder.isAdmin() && !assignment.dto().getAssignmentCreatedBy().equals(userId)
             && !assignment.dto().getUserId().equals(userId)) {
       throw new ForbiddenAssignmentOperationException(assignmentId);
     }
@@ -143,7 +142,7 @@ public class AssignmentFacade {
   private void validateDeleteAssignment(Long userId, Long assignmentId) {
     Optional<Assignment> assignment = assignmentRepository.findByAssignmentId(assignmentId);
     if (assignment.isPresent()) {
-      if (!securityFacade.isAdmin(userId) && !assignment.get().dto().getAssignmentCreatedBy().equals(userId)) {
+      if (!ContextHolder.isAdmin() && !assignment.get().dto().getAssignmentCreatedBy().equals(userId)) {
         throw new ForbiddenAssignmentOperationException(assignmentId);
       }
     }

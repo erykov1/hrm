@@ -1,8 +1,9 @@
 package erykmarnik.hrm.user.domain
 
+import erykmarnik.hrm.integration.IntegrationSpec
+import erykmarnik.hrm.integration.UserRequest
 import erykmarnik.hrm.user.dto.UserDto
 import erykmarnik.hrm.user.dto.UserRoleDto
-import erykmarnik.hrm.integration.IntegrationSpec
 import erykmarnik.hrm.user.sample.UserSample
 
 class UserAcceptanceSpec extends IntegrationSpec implements UserSample {
@@ -15,9 +16,9 @@ class UserAcceptanceSpec extends IntegrationSpec implements UserSample {
   }
 
   def cleanup() {
-    userApiFacade.deleteUser(user.userId)
+    userApiFacade.deleteUser(user.userId, new UserRequest(user))
     if (mike != null) {
-      userApiFacade.deleteUser(mike.userId)
+      userApiFacade.deleteUser(mike.userId, new UserRequest(mike))
     }
   }
 
@@ -39,7 +40,7 @@ class UserAcceptanceSpec extends IntegrationSpec implements UserSample {
     given: "there is employee"
       user = userApiFacade.createEmployee(createNewUser())
     when: "changes his username to 'john1234'"
-      user = userApiFacade.modifyUser(modifyUser(username: "john1234"), user.userId)
+      user = userApiFacade.modifyUser(modifyUser(username: "john1234"), new UserRequest(user))
     then: "username is changed"
       equalsUser(user, createUser(userId: user.userId, username: "john1234"))
   }
@@ -50,7 +51,7 @@ class UserAcceptanceSpec extends IntegrationSpec implements UserSample {
     and: "there is another employee"
       mike = userApiFacade.createEmployee(createNewUser(username: "mike1", name: "Mike", surname:  "Smith", email: "mike@mail.com"))
     when: "asks for all users"
-      List<UserDto> users = userApiFacade.getUsers()
+      List<UserDto> users = userApiFacade.getUsers(new UserRequest(user))
     then: "return all users"
       equalsUsers(users, [createUser(userId: user.userId), createUser(userId: mike.userId, username: "mike1", name: "Mike",
               surname:  "Smith", email: "mike@mail.com")])
@@ -62,9 +63,9 @@ class UserAcceptanceSpec extends IntegrationSpec implements UserSample {
     and: "there is another employee"
       mike = userApiFacade.createEmployee(createNewUser(username: "mike1", name: "Mike", surname:  "Smith", email: "mike@mail.com"))
     when: "deletes 'mike'"
-      userApiFacade.deleteUser(mike.userId)
+      userApiFacade.deleteUser(mike.userId, new UserRequest(mike))
     then: "'mike' is deleted"
-      List<UserDto> users = userApiFacade.getUsers()
+      List<UserDto> users = userApiFacade.getUsers(new UserRequest(user))
       equalsUsers(users, [createUser(userId: user.userId)])
   }
 
@@ -72,7 +73,7 @@ class UserAcceptanceSpec extends IntegrationSpec implements UserSample {
     given: "there is employee"
       user = userApiFacade.createEmployee(createNewUser())
     when: "asks for user $user"
-      UserDto result = userApiFacade.getByUserId(user.userId)
+      UserDto result = userApiFacade.getByUserId(user.userId, new UserRequest(user))
     then: "gets user $user"
       result == user
   }

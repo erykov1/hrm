@@ -6,6 +6,7 @@ import erykmarnik.hrm.task.dto.ModifyTaskDto
 import erykmarnik.hrm.task.dto.TaskDto
 import erykmarnik.hrm.task.exception.ForbiddenTaskOperationException
 import erykmarnik.hrm.task.exception.TaskNotFoundException
+import erykmarnik.hrm.user.dto.UserRoleDto
 
 
 class TaskSpec extends TaskBaseSpec {
@@ -25,6 +26,15 @@ class TaskSpec extends TaskBaseSpec {
       TaskDto task = taskFacade.createTask(createNewTask(createdAt: NOW, categoryId: newEmployeeCategory))
     then: "task is created"
       task == createTask(taskId: task.getTaskId(), createdAt: NOW, createdBy: ADMIN_JANE, categoryId: newEmployeeCategory)
+  }
+
+  def "Should not create task if user is employee"() {
+    given: "user $EMPLOYEE_JOHN is logged in"
+      loginUser(EMPLOYEE_JOHN, UserRoleDto.EMPLOYEE)
+    when: "user $EMPLOYEE_JOHN creates task"
+      taskFacade.createTask(createNewTask(createdAt: NOW, categoryId: newEmployeeCategory))
+    then: "task is not created"
+      thrown(ForbiddenTaskOperationException)
   }
 
   def "Should delete task"() {
@@ -58,7 +68,7 @@ class TaskSpec extends TaskBaseSpec {
     given: "task for user $EMPLOYEE_JOHN is created"
       UUID taskId = taskFacade.createTask(createNewTask(createdAt: NOW, categoryId: newEmployeeCategory)).taskId
     and: "user $EMPLOYEE_MIKE logs in"
-      loginUser(EMPLOYEE_MIKE)
+      loginUser(EMPLOYEE_MIKE, UserRoleDto.EMPLOYEE)
     when: "user $EMPLOYEE_MIKE tries to modify task"
       taskFacade.modifyTask(taskId, ModifyTaskDto.builder().taskName(ONBOARDING_TASK).build())
     then: "task is not modified by user $EMPLOYEE_MIKE"

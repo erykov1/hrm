@@ -3,7 +3,6 @@ package erykmarnik.hrm.assignments.sample
 import erykmarnik.hrm.assignments.dto.AssignmentDto
 import erykmarnik.hrm.assignments.dto.AssignmentStatusDto
 import erykmarnik.hrm.assignments.dto.CreateAssignmentDto
-import erykmarnik.hrm.assignments.dto.CreateAssignmentNoteDto
 
 import java.time.Instant
 

@@ -27,7 +27,7 @@ class AnalyticApiFacade extends HrmApi {
   }
 
   Collection<UserAssignmentDto> getUserAssignments(RequestParams params, UserRequest userRequest) {
-    ContextHolder.setUserContext(new UserContext(userRequest.getUserId()))
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/analytic/user/assignments")
             .param("direction", params.order.direction.name())
             .param("parameter", params.order.property)
@@ -40,7 +40,7 @@ class AnalyticApiFacade extends HrmApi {
   }
 
   Collection<AssignmentInfoDto> getAssignmentsWithStatus(RequestParams params, AssignmentStatusDto status, UserRequest userRequest) {
-    ContextHolder.setUserContext(new UserContext(userRequest.getUserId()))
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/analytic/assignments/{status}", status)
             .param("direction", params.order.direction.name())
             .param("parameter", params.order.property)

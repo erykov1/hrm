@@ -1,10 +1,12 @@
 package erykmarnik.hrm.assignments.domain
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import erykmarnik.hrm.assignments.dto.AssignmentAnalyticDto
 import erykmarnik.hrm.assignments.dto.AssignmentDto
 import erykmarnik.hrm.assignments.dto.CreateAssignmentDto
 import erykmarnik.hrm.integration.HrmApi
+import erykmarnik.hrm.integration.UserRequest
+import erykmarnik.hrm.user.dto.UserContext
+import erykmarnik.hrm.utils.ContextHolder
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActions
@@ -21,7 +23,8 @@ class AssignmentApiFacade extends HrmApi {
     this.mapper = mapper
   }
 
-  AssignmentDto createAssignment(CreateAssignmentDto createAssignment) {
+  AssignmentDto createAssignment(CreateAssignmentDto createAssignment, UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.post("/api/assignment/create")
             .contentType(MediaType.APPLICATION_JSON)
             .content(mapper.writeValueAsString(createAssignment))
@@ -31,17 +34,20 @@ class AssignmentApiFacade extends HrmApi {
     value
   }
 
-  void deleteAssignment(Long assignmentId) {
+  void deleteAssignment(Long assignmentId, UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.delete("/api/assignment/delete/{assignmentId}", assignmentId))
     checkResponse(perform.andReturn().response)
   }
 
-  void setToDone(Long assignmentId) {
+  void setToDone(Long assignmentId, UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.put("/api/assignment/done/{assignmentId}", assignmentId))
     checkResponse(perform.andReturn().response)
   }
 
-  AssignmentDto getAssignmentById(Long assignmentId) {
+  AssignmentDto getAssignmentById(Long assignmentId, UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/assignment/{assignmentId}", assignmentId)
             .contentType(MediaType.APPLICATION_JSON))
     checkResponse(perform.andReturn().response)
@@ -49,7 +55,8 @@ class AssignmentApiFacade extends HrmApi {
     value
   }
 
-  List<AssignmentDto> getAllAssignments() {
+  List<AssignmentDto> getAllAssignments(UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/assignment/all").contentType(MediaType.APPLICATION_JSON))
     checkResponse(perform.andReturn().response)
     List<AssignmentDto> value = mapper.readValue(perform.andReturn().response.getContentAsString(StandardCharsets.UTF_8),
@@ -57,7 +64,8 @@ class AssignmentApiFacade extends HrmApi {
     value
   }
 
-  List<AssignmentDto> getUserAssignments() {
+  List<AssignmentDto> getUserAssignments(UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/assignment/user").contentType(MediaType.APPLICATION_JSON))
     checkResponse(perform.andReturn().response)
     List<AssignmentDto> value = mapper.readValue(perform.andReturn().response.getContentAsString(StandardCharsets.UTF_8),

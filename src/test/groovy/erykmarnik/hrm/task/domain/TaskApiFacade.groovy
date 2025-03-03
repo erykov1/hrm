@@ -2,9 +2,12 @@ package erykmarnik.hrm.task.domain
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import erykmarnik.hrm.integration.HrmApi
+import erykmarnik.hrm.integration.UserRequest
 import erykmarnik.hrm.task.dto.CreateTaskDto
 import erykmarnik.hrm.task.dto.ModifyTaskDto
 import erykmarnik.hrm.task.dto.TaskDto
+import erykmarnik.hrm.user.dto.UserContext
+import erykmarnik.hrm.utils.ContextHolder
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActions
@@ -21,7 +24,8 @@ class TaskApiFacade extends HrmApi {
     this.mapper = mapper
   }
 
-  TaskDto createTask(CreateTaskDto createTask) {
+  TaskDto createTask(CreateTaskDto createTask, UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.post("/api/task/create")
             .contentType(MediaType.APPLICATION_JSON)
             .content(mapper.writeValueAsString(createTask))
@@ -31,7 +35,8 @@ class TaskApiFacade extends HrmApi {
     value
   }
 
-  TaskDto modifyTask(UUID taskId, ModifyTaskDto modifyTask) {
+  TaskDto modifyTask(UUID taskId, ModifyTaskDto modifyTask, UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.put("/api/task/{taskId}/modify", taskId)
             .contentType(MediaType.APPLICATION_JSON)
             .content(mapper.writeValueAsString(modifyTask))
@@ -41,19 +46,22 @@ class TaskApiFacade extends HrmApi {
     value
   }
 
-  void deleteTask(UUID taskId) {
+  void deleteTask(UUID taskId, UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.delete("/api/task/{taskId}/delete", taskId))
     checkResponse(perform.andReturn().response)
   }
 
-  List<TaskDto> getAll() {
+  List<TaskDto> getAll(UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/task/all").contentType(MediaType.APPLICATION_JSON))
     List<TaskDto> value = mapper.readValue(perform.andReturn().response.getContentAsString(StandardCharsets.UTF_8),
             mapper.getTypeFactory().constructCollectionType(List.class, TaskDto.class))
     value
   }
 
-  TaskDto getTaskById(UUID taskId) {
+  TaskDto getTaskById(UUID taskId, UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/task/{taskId}", taskId)
             .contentType(MediaType.APPLICATION_JSON)
     )

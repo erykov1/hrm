@@ -1,6 +1,7 @@
 package erykmarnik.hrm.task.domain
 
 import erykmarnik.hrm.task.dto.CategoryDto
+
 import java.time.Instant
 
 trait CategorySample {

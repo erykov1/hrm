@@ -1,6 +1,5 @@
 package erykmarnik.hrm.task.domain;
 
-import erykmarnik.hrm.security.SecurityFacade;
 import erykmarnik.hrm.task.dto.*;
 import erykmarnik.hrm.task.exception.*;
 import erykmarnik.hrm.utils.ContextHolder;
@@ -9,9 +8,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.expression.spel.ast.Assign;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -21,7 +17,6 @@ import java.util.stream.Collectors;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TaskFacade {
   TaskCreator taskCreator;
-  SecurityFacade securityFacade;
   InstantProvider instantProvider;
   CategoryRepository categoryRepository;
 
@@ -33,6 +28,7 @@ public class TaskFacade {
 
   public TaskDto createTask(CreateTaskDto createTask) {
     log.info("creating task");
+    validateTaskOperation();
     Category category = findCategoryById(createTask.getCategoryId());
     Task task = taskCreator.createTask(createTask, category);
     categoryRepository.save(category.addTask(task));
@@ -103,13 +99,19 @@ public class TaskFacade {
 
   private void validateUserPrivileges(UUID taskId, Long userId) {
     if (!isAbleToModifyTask(taskId, userId)) {
-      throw new ForbiddenTaskOperationException(taskId);
+      throw new ForbiddenTaskOperationException();
     }
   }
 
   private boolean isAbleToModifyTask(UUID taskId, Long userId) {
     TaskDto task = findByTaskId(taskId);
-    return task.getCreatedBy().equals(userId) || securityFacade.isAdmin(userId);
+    return task.getCreatedBy().equals(userId) || ContextHolder.isAdmin();
+  }
+
+  private void validateTaskOperation() {
+    if (!ContextHolder.isAdmin()) {
+      throw new ForbiddenTaskOperationException();
+    }
   }
 
   private Category findCategoryById(Long categoryId) {

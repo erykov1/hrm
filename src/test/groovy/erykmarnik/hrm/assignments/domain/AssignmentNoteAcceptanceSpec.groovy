@@ -3,14 +3,12 @@ package erykmarnik.hrm.assignments.domain
 import erykmarnik.hrm.assignments.dto.AssignmentDto
 import erykmarnik.hrm.assignments.dto.AssignmentNoteDto
 import erykmarnik.hrm.assignments.dto.AssignmentNoteModifyDto
-import erykmarnik.hrm.assignments.dto.CreateAssignmentDto
 import erykmarnik.hrm.assignments.dto.CreateAssignmentNoteDto
+import erykmarnik.hrm.integration.UserRequest
 import erykmarnik.hrm.task.dto.CategoryDto
 import erykmarnik.hrm.task.dto.CreateCategoryDto
 import erykmarnik.hrm.task.dto.TaskDto
-import erykmarnik.hrm.user.dto.UserContext
 import erykmarnik.hrm.user.dto.UserDto
-import erykmarnik.hrm.utils.ContextHolder
 
 class AssignmentNoteAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
   private UserDto jane
@@ -28,55 +26,53 @@ class AssignmentNoteAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
     and: "there is employee $mike"
       mike = userApiFacade.createEmployee(createNewUser(username: "mike123", name: "Mike", surname: "Smith", email: "mike@mail.com"))
     and: "there is category $newEmployee"
-      newEmployee = createCategoryRequest(new CreateCategoryDto(CATEGORY_NAME), jane.userId)
+      newEmployee = categoryApiFacade.createCategory(new CreateCategoryDto(CATEGORY_NAME), new UserRequest(jane))
     and: "there is task $onboarding assigned to category $newEmployee"
-      ContextHolder.setUserContext(new UserContext(jane.userId))
-      onboarding = createTaskRequest(jane.userId, createNewTask(createdAt: NOW, categoryId: newEmployee.categoryId))
+      onboarding = taskApiFacade.createTask(createNewTask(createdAt: NOW, categoryId: newEmployee.categoryId), new UserRequest(jane))
     and: "user $mike is assigned to task $onboarding"
-      assignment = createAssignment(jane.userId, createNewAssignment(userId: mike.userId, objectId: onboarding.taskId))
+      assignment = assignmentApiFacade.createAssignment(createNewAssignment(userId: mike.userId, objectId: onboarding.taskId), new UserRequest(jane))
   }
 
   def cleanup() {
-    deleteAssignmentNote(assignment.assignmentId, assignmentNote, mike.userId)
-    deleteAssignment(assignment.assignmentId, jane.userId)
-    userApiFacade.deleteUser(jane.userId)
-    userApiFacade.deleteUser(mike.userId)
-    taskApiFacade.deleteTask(onboarding.taskId)
+    deleteAssignmentNote(assignment.assignmentId, assignmentNote, new UserRequest(mike))
+    deleteAssignment(assignment.assignmentId, new UserRequest(jane))
+    taskApiFacade.deleteTask(onboarding.taskId, new UserRequest(jane))
+    categoryApiFacade.deleteCategory(newEmployee.categoryId, new UserRequest(jane))
+    userApiFacade.deleteUser(jane.userId, new UserRequest(jane))
+    userApiFacade.deleteUser(mike.userId, new UserRequest(mike))
     timeApiFacade.useSystemClock()
-    deleteCategory(newEmployee.categoryId, jane.userId)
-    ContextHolder.clear()
   }
 
   def "Should be able to add note to assigned object"() {
     when: "user $mike adds note"
-      assignmentNote = addAssignmentNote(new CreateAssignmentNoteDto(NOTE_CONTENT, assignment.assignmentId), mike.userId)
+      assignmentNote = assignmentNoteApiFacade.addAssignmentNote(new CreateAssignmentNoteDto(NOTE_CONTENT, assignment.assignmentId), new UserRequest(mike))
     then: "note is added to assigned object"
       assignmentNote == createNoteAssignment(noteId: assignmentNote.noteId, noteContent: NOTE_CONTENT, assignmentId: assignment.assignmentId)
   }
 
   def "Admin should be able to add note to assigned object to user"() {
     when: "admin $jane adds note"
-      assignmentNote = addAssignmentNote(new CreateAssignmentNoteDto(NOTE_CONTENT, assignment.assignmentId), jane.userId)
+      assignmentNote = assignmentNoteApiFacade.addAssignmentNote(new CreateAssignmentNoteDto(NOTE_CONTENT, assignment.assignmentId), new UserRequest(jane))
     then: "note is added to assigned object"
       assignmentNote == createNoteAssignment(noteId: assignmentNote.noteId, noteContent: NOTE_CONTENT, assignmentId: assignment.assignmentId)
   }
 
   def "Should be able to delete note"() {
     given: "user $mike adds note"
-      assignmentNote = addAssignmentNote(new CreateAssignmentNoteDto(NOTE_CONTENT, assignment.assignmentId), mike.userId)
+      assignmentNote = assignmentNoteApiFacade.addAssignmentNote(new CreateAssignmentNoteDto(NOTE_CONTENT, assignment.assignmentId), new UserRequest(mike))
     when: "$mike deletes note"
-      deleteAssignmentNote(assignment.assignmentId, assignmentNote, mike.userId)
+      deleteAssignmentNote(assignment.assignmentId, assignmentNote, new UserRequest(mike))
     then: "note $assignmentNote is deleted"
-      getAssignmentsNotesFor(assignment.assignmentId, mike.userId) == []
+      assignmentNoteApiFacade.getAssignmentNotesFor(assignment.assignmentId, new UserRequest(mike)) == []
   }
 
   def "Should be able to modify note content"() {
     given: "user $mike adds note"
-      assignmentNote = addAssignmentNote(new CreateAssignmentNoteDto(NOTE_CONTENT, assignment.assignmentId), mike.userId)
+      assignmentNote = assignmentNoteApiFacade.addAssignmentNote(new CreateAssignmentNoteDto(NOTE_CONTENT, assignment.assignmentId), new UserRequest(mike))
     when: "$mike modifies note $assignmentNote content"
-      modifyAssignmentNote(assignmentNote.noteId, new AssignmentNoteModifyDto("new assignment note content"), mike.userId)
+      assignmentNoteApiFacade.modifyAssignmentNote(assignmentNote.noteId, new AssignmentNoteModifyDto("new assignment note content"), new UserRequest(mike))
     then: "note content $assignmentNote is modified"
-      getAssignmentsNotesFor(assignment.assignmentId, mike.userId) == [createNoteAssignment(noteId: assignmentNote.noteId,
+      assignmentNoteApiFacade.getAssignmentNotesFor(assignment.assignmentId, new UserRequest(mike)) == [createNoteAssignment(noteId: assignmentNote.noteId,
         noteContent: "new assignment note content", assignmentId: assignment.assignmentId
       )]
   }

@@ -2,8 +2,8 @@ package erykmarnik.hrm.assignments.sample
 
 import erykmarnik.hrm.analytic.dto.AssignmentInfoDto
 import erykmarnik.hrm.analytic.dto.UserAssignmentDto
-import erykmarnik.hrm.assignments.dto.AssignmentAnalyticDto
 import erykmarnik.hrm.assignments.dto.AssignmentStatusDto
+
 import java.time.Instant
 
 trait AssignmentAnalyticSample {

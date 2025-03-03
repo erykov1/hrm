@@ -1,7 +1,7 @@
 package erykmarnik.hrm.security;
 
-
 import erykmarnik.hrm.user.dto.UserContext;
+import erykmarnik.hrm.user.dto.UserRoleDto;
 import erykmarnik.hrm.utils.ContextHolder;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,8 +28,9 @@ class UserContextInterceptor implements HandlerInterceptor {
     if (authHeader != null && authHeader.startsWith("Bearer ")) {
       Jwt jwt = jwtDecodeGetter.decodeToken(authHeader.substring(7));
       String userId = jwt.getClaimAsString("iss");
-      if (userId != null) {
-        ContextHolder.setUserContext(new UserContext(Long.valueOf(userId)));
+      String userRole = jwt.getClaimAsString("role");
+      if (userId != null && userRole != null) {
+        ContextHolder.setUserContext(new UserContext(Long.valueOf(userId), UserRoleDto.valueOf(userRole)));
       }
     }
     return true;

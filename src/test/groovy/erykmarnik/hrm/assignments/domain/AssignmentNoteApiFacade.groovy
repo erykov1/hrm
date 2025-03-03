@@ -5,6 +5,9 @@ import erykmarnik.hrm.assignments.dto.AssignmentNoteDto
 import erykmarnik.hrm.assignments.dto.AssignmentNoteModifyDto
 import erykmarnik.hrm.assignments.dto.CreateAssignmentNoteDto
 import erykmarnik.hrm.integration.HrmApi
+import erykmarnik.hrm.integration.UserRequest
+import erykmarnik.hrm.user.dto.UserContext
+import erykmarnik.hrm.utils.ContextHolder
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActions
@@ -21,7 +24,8 @@ class AssignmentNoteApiFacade extends HrmApi {
     this.mapper = mapper
   }
 
-  AssignmentNoteDto addAssignmentNote(CreateAssignmentNoteDto note) {
+  AssignmentNoteDto addAssignmentNote(CreateAssignmentNoteDto note, UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.post("/api/assignment/note/add")
             .contentType(MediaType.APPLICATION_JSON)
             .content(mapper.writeValueAsString(note))
@@ -32,12 +36,14 @@ class AssignmentNoteApiFacade extends HrmApi {
     value
   }
 
-  void deleteAssignmentNote(UUID noteId) {
+  void deleteAssignmentNote(UUID noteId, UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.delete("/api/assignment/note/delete/{noteId}", noteId))
     checkResponse(perform.andReturn().response)
   }
 
-  List<AssignmentNoteDto> getAssignmentNotesFor(Long assignmentId) {
+  List<AssignmentNoteDto> getAssignmentNotesFor(Long assignmentId, UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.get("/api/assignment/note/{assignmentId}", assignmentId)
             .contentType(MediaType.APPLICATION_JSON))
     checkResponse(perform.andReturn().response)
@@ -46,7 +52,8 @@ class AssignmentNoteApiFacade extends HrmApi {
     value
   }
 
-  AssignmentNoteDto modifyAssignmentNote(UUID noteId, AssignmentNoteModifyDto noteModify) {
+  AssignmentNoteDto modifyAssignmentNote(UUID noteId, AssignmentNoteModifyDto noteModify, UserRequest userRequest) {
+    ContextHolder.setUserContext(new UserContext(userRequest.getUserId(), userRequest.getUserRole()))
     ResultActions perform = mvc.perform(MockMvcRequestBuilders.put("/api/assignment/note/modify/{noteId}", noteId)
             .contentType(MediaType.APPLICATION_JSON)
             .content(mapper.writeValueAsString(noteModify))

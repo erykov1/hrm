@@ -2,13 +2,11 @@ package erykmarnik.hrm.assignments.domain
 
 import erykmarnik.hrm.assignments.dto.AssignmentDto
 import erykmarnik.hrm.assignments.dto.AssignmentStatusDto
-import erykmarnik.hrm.assignments.dto.CreateAssignmentDto
+import erykmarnik.hrm.integration.UserRequest
 import erykmarnik.hrm.task.dto.CategoryDto
 import erykmarnik.hrm.task.dto.CreateCategoryDto
 import erykmarnik.hrm.task.dto.TaskDto
-import erykmarnik.hrm.user.dto.UserContext
 import erykmarnik.hrm.user.dto.UserDto
-import erykmarnik.hrm.utils.ContextHolder
 
 class AssignmentAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
   private UserDto jane
@@ -25,61 +23,56 @@ class AssignmentAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
     and: "there is employee $mike"
       mike = userApiFacade.createEmployee(createNewUser(username: "mike123", name: "Mike", surname: "Smith", email: "mike@mail.com"))
     and: "there is category $onboardingCategory"
-      ContextHolder.setUserContext(new UserContext(jane.userId))
-      onboardingCategory = categoryApiFacade.createCategory(new CreateCategoryDto(ONBOARDING))
+      onboardingCategory = categoryApiFacade.createCategory(new CreateCategoryDto(ONBOARDING), new UserRequest(jane))
     and: "there is task $onboarding"
-      ContextHolder.setUserContext(new UserContext(jane.userId))
-      onboarding = taskApiFacade.createTask(createNewTask(createdAt: NOW, categoryId: onboardingCategory.categoryId))
+      onboarding = taskApiFacade.createTask(createNewTask(createdAt: NOW, categoryId: onboardingCategory.categoryId), new UserRequest(jane))
   }
 
   def cleanup() {
-    deleteAssignment(assignmentId, jane.userId)
-    userApiFacade.deleteUser(jane.userId)
-    userApiFacade.deleteUser(mike.userId)
-    taskApiFacade.deleteTask(onboarding.taskId)
-    categoryApiFacade.deleteCategory(onboardingCategory.categoryId)
+    deleteAssignment(assignmentId, new UserRequest(jane))
+    userApiFacade.deleteUser(mike.userId, new UserRequest(mike))
+    taskApiFacade.deleteTask(onboarding.taskId, new UserRequest(jane))
+    categoryApiFacade.deleteCategory(onboardingCategory.categoryId, new UserRequest(jane))
+    userApiFacade.deleteUser(jane.userId, new UserRequest(jane))
     timeApiFacade.useSystemClock()
-    ContextHolder.clear()
   }
 
   def "Should create new assignment"() {
     when: "admin $jane assignes user $mike to task $onboarding"
-      assignmentId = createAssignment(jane.userId, createNewAssignment(userId: mike.userId, objectId: onboarding.taskId)).assignmentId
+      assignmentId = assignmentApiFacade.createAssignment(createNewAssignment(userId: mike.userId, objectId: onboarding.taskId), new UserRequest(jane)).assignmentId
     then: "user $mike is assigned to task $onboarding"
-      getAssignment(assignmentId, jane.userId) == createAssignment(assignmentId: assignmentId, userId: mike.userId,
+      assignmentApiFacade.getAllAssignments(new UserRequest(jane)) == [createAssignment(assignmentId: assignmentId, userId: mike.userId,
               objectId: onboarding.taskId, assignedAt: NOW, doneAt: null, assignmentCreatedBy: jane.userId,
               assignmentStatus: AssignmentStatusDto.NOT_STARTED
-      )
+      )]
   }
 
   def "Should delete assignment"() {
     given: "admin $jane assignes user $mike to task $onboarding"
-      assignmentId = createAssignment(jane.userId, createNewAssignment(userId: mike.userId, objectId: onboarding.taskId)).assignmentId
+      assignmentId = assignmentApiFacade.createAssignment(createNewAssignment(userId: mike.userId, objectId: onboarding.taskId), new UserRequest(jane)).assignmentId
     when: "admin $jane deletes assignment $assignmentId"
-      assignmentId = deleteAssignment(assignmentId, jane.userId)
+      assignmentId = deleteAssignment(assignmentId, new UserRequest(jane))
     then: "assignment is removed"
-      assignmentApiFacade.getAllAssignments() == []
+      assignmentApiFacade.getAllAssignments(new UserRequest(jane)) == []
   }
 
   def "Should set assignment to done"() {
     given: "admin $jane assignes user $mike to task $onboarding"
-      assignmentId = createAssignment(jane.userId, createNewAssignment(userId: mike.userId, objectId: onboarding.taskId)).assignmentId
-    and: "employee $mike logs in $WEEK_LATER"
+      assignmentId = assignmentApiFacade.createAssignment(createNewAssignment(userId: mike.userId, objectId: onboarding.taskId), new UserRequest(jane)).assignmentId
+    when: "employee $mike sets task $onboarding to done status $WEEK_LATER"
       timeApiFacade.useFixedClock(WEEK_LATER)
-      ContextHolder.setUserContext(new UserContext(mike.userId))
-    when: "employee $mike sets task $onboarding to done status"
-      setToDone(assignmentId, mike.userId)
+      assignmentApiFacade.setToDone(assignmentId, new UserRequest(mike))
     then: "assignment has status done"
-      getAssignment(assignmentId, mike.userId) == createAssignment(assignmentId: assignmentId, userId: mike.userId, objectId: onboarding.taskId,
+      assignmentApiFacade.getUserAssignments(new UserRequest(mike)) == [createAssignment(assignmentId: assignmentId, userId: mike.userId, objectId: onboarding.taskId,
               assignedAt: NOW, doneAt: WEEK_LATER, assignmentCreatedBy: jane.userId, assignmentStatus: AssignmentStatusDto.DONE
-      )
+      )]
   }
 
   def "Should get user assignment"() {
     given: "admin $jane assignes user $mike to task $onboarding"
-      assignmentId = createAssignment(jane.userId, createNewAssignment(userId: mike.userId, objectId: onboarding.taskId)).assignmentId
+      assignmentId = assignmentApiFacade.createAssignment(createNewAssignment(userId: mike.userId, objectId: onboarding.taskId), new UserRequest(jane)).assignmentId
     when: "$mike asks for assignments"
-      List<AssignmentDto> assignments = getUserAssignment(mike.userId)
+      List<AssignmentDto> assignments = assignmentApiFacade.getUserAssignments(new UserRequest(mike))
     then: "$mike gets his all assignments"
       assignments == [createAssignment(assignmentId: assignmentId, userId: mike.userId, objectId: onboarding.taskId, assignedAt: NOW,
               doneAt: null, assignmentCreatedBy: jane.userId, assignmentStatus: AssignmentStatusDto.NOT_STARTED
@@ -88,33 +81,33 @@ class AssignmentAcceptanceSpec extends AssignmentAcceptanceBaseSpec {
 
   def "Should create assignment with due date"() {
     when: "admin $jane assignes user $mike to task $onboarding with due date $WEEK_LATER"
-      assignmentId = createAssignment(jane.userId, createNewAssignment(userId: mike.userId, objectId: onboarding.taskId, dueTo: WEEK_LATER)).assignmentId
+      assignmentId = assignmentApiFacade.createAssignment(createNewAssignment(userId: mike.userId, objectId: onboarding.taskId, dueTo: WEEK_LATER), new UserRequest(jane)).assignmentId
     then: "assignment is created with due date"
-      getUserAssignment(mike.userId) == [createAssignment(assignmentId: assignmentId, userId: mike.userId, objectId: onboarding.taskId, assignedAt: NOW,
+      assignmentApiFacade.getAllAssignments(new UserRequest(jane)) == [createAssignment(assignmentId: assignmentId, userId: mike.userId, objectId: onboarding.taskId, assignedAt: NOW,
               doneAt: null, assignmentCreatedBy: jane.userId, assignmentStatus: AssignmentStatusDto.NOT_STARTED, dueTo: WEEK_LATER
       )]
   }
 
   def "Should terminate assignment when user not complete it"() {
     given: "admin $jane assignes user $mike to task $onboarding with due date $THREE_DAYS_LATER"
-      assignmentId = createAssignment(jane.userId, createNewAssignment(userId: mike.userId, objectId: onboarding.taskId, dueTo: THREE_DAYS_LATER)).assignmentId
+      assignmentId = assignmentApiFacade.createAssignment(createNewAssignment(userId: mike.userId, objectId: onboarding.taskId, dueTo: THREE_DAYS_LATER), new UserRequest(jane)).assignmentId
     when: "current time is $WEEK_LATER"
       timeApiFacade.useFixedClock(WEEK_LATER)
       assignmentApiFacade.outDateNotStarted()
     then: "assignment $assignmentId is terminated"
-      getUserAssignment(mike.userId) == [createAssignment(assignmentId: assignmentId, userId: mike.userId, objectId: onboarding.taskId, assignedAt: NOW,
+      assignmentApiFacade.getAllAssignments(new UserRequest(jane)) == [createAssignment(assignmentId: assignmentId, userId: mike.userId, objectId: onboarding.taskId, assignedAt: NOW,
               doneAt: null, assignmentCreatedBy: jane.userId, assignmentStatus: AssignmentStatusDto.OVERDUE, dueTo: THREE_DAYS_LATER
       )]
   }
 
   def "Should not terminate assignment if current time is before due date"() {
     given: "admin $jane assignes user $mike to task $onboarding with due date $WEEK_LATER"
-      assignmentId = createAssignment(jane.userId, createNewAssignment(userId: mike.userId, objectId: onboarding.taskId, dueTo: WEEK_LATER)).assignmentId
+      assignmentId = assignmentApiFacade.createAssignment(createNewAssignment(userId: mike.userId, objectId: onboarding.taskId, dueTo: WEEK_LATER), new UserRequest(jane)).assignmentId
     when: "current time is $THREE_DAYS_LATER"
       timeApiFacade.useFixedClock(THREE_DAYS_LATER)
       assignmentApiFacade.outDateNotStarted()
     then: "assignment $assignmentId is not terminated"
-      getUserAssignment(mike.userId) == [createAssignment(assignmentId: assignmentId, userId: mike.userId, objectId: onboarding.taskId, assignedAt: NOW,
+      assignmentApiFacade.getAllAssignments(new UserRequest(jane)) == [createAssignment(assignmentId: assignmentId, userId: mike.userId, objectId: onboarding.taskId, assignedAt: NOW,
               doneAt: null, assignmentCreatedBy: jane.userId, assignmentStatus: AssignmentStatusDto.NOT_STARTED, dueTo: WEEK_LATER
       )]
   }

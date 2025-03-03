@@ -2,22 +2,22 @@ package erykmarnik.hrm.assignments.domain
 
 import erykmarnik.hrm.assignments.dto.AssignmentDto
 import erykmarnik.hrm.assignments.dto.AssignmentStatusDto
+import erykmarnik.hrm.assignments.exception.AlreadyAssignedException
+import erykmarnik.hrm.assignments.exception.AssignmentNotFoundException
+import erykmarnik.hrm.assignments.exception.ForbiddenAssignmentOperationException
 import erykmarnik.hrm.assignments.exception.OverDueAssignmentException
 import erykmarnik.hrm.assignments.sample.AssignmentSample
 import erykmarnik.hrm.task.sample.TaskSample
+import erykmarnik.hrm.user.dto.UserRoleDto
 import erykmarnik.hrm.utils.ContextSpec
 import erykmarnik.hrm.utils.InstantProvider
 import erykmarnik.hrm.utils.sample.TimeSample
-import erykmarnik.hrm.assignments.exception.AlreadyAssignedException
-import erykmarnik.hrm.assignments.exception.ForbiddenAssignmentOperationException
-import erykmarnik.hrm.assignments.exception.AssignmentNotFoundException
 import org.springframework.context.ApplicationEventPublisher
 
 class AssignmentSpec extends ContextSpec implements TimeSample, AssignmentSample, TaskSample {
   InstantProvider instantProvider = new InstantProvider()
   ApplicationEventPublisher applicationEventPublisher = Mock(ApplicationEventPublisher.class)
-  AssignmentFacade assignmentFacade = new AssignmentConfiguration().assignmentFacade(instantProvider, securityFacade,
-          Stub(AssignmentAnalytic.class), applicationEventPublisher)
+  AssignmentFacade assignmentFacade = new AssignmentConfiguration().assignmentFacade(instantProvider, Stub(AssignmentAnalytic.class), applicationEventPublisher)
 
   def setup() {
     instantProvider.useFixedClock(NOW)
@@ -62,7 +62,7 @@ class AssignmentSpec extends ContextSpec implements TimeSample, AssignmentSample
     given: "admin $ADMIN_JANE creates assignment for user $EMPLOYEE_MIKE to object $OBJECT_ID"
       Long assignmentId = assignmentFacade.createAssignment(createNewAssignment(userId: EMPLOYEE_MIKE, objectId: OBJECT_ID)).assignmentId
     and: "user $EMPLOYEE_JOHN logs in"
-      loginUser(EMPLOYEE_JOHN)
+      loginUser(EMPLOYEE_JOHN, UserRoleDto.EMPLOYEE)
     when: "user $EMPLOYEE_JOHN tries to set to done assignment $assignmentId"
       assignmentFacade.setAssignmentToDone(assignmentId)
     then: "assignment is not set to done"
@@ -82,7 +82,7 @@ class AssignmentSpec extends ContextSpec implements TimeSample, AssignmentSample
     given: "admin $ADMIN_JANE creates assignment for user $EMPLOYEE_MIKE to object $OBJECT_ID"
       Long assignmentId = assignmentFacade.createAssignment(createNewAssignment(userId: EMPLOYEE_MIKE, objectId: OBJECT_ID)).assignmentId
     and: "$EMPLOYEE_MIKE logs in"
-      loginUser(EMPLOYEE_MIKE)
+      loginUser(EMPLOYEE_MIKE, UserRoleDto.EMPLOYEE)
     when: "$EMPLOYEE_MIKE tries to delete assignment"
       assignmentFacade.deleteAssignment(assignmentId)
     then: "assignment with id $assignmentId is not deleted"
